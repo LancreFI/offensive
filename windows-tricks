@@ -1,0 +1,2 @@
+##Check if CMD or Powershell (by PetSerA)
+(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell
