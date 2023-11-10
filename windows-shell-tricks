@@ -30,8 +30,10 @@ $ToBytes = [System.Text.Encoding]::Unicode.GetBytes($Oneliner)
 $Base64Enc =[Convert]::ToBase64String($ToBytes)
 
 !REMEMBER! make sure you use UTF16-LE, which for example Linux base64 does not do! (thanks to byt3bl33d3r!)
-#Commandline
+#Commandline for Unicode
 echo "iex(command)" | iconv --to-code UTF-16LE | base64 -w 0
+#Commandline for UTF8 ([System.Text.Encoding]::UTF8.GetBytes() won't work on exec
+echo -n "abcd" | iconv -f UTF8 -t UTF16LE | base64
 #Python
 from base64 import b64encode
 b64encode('iex(command)'.encode('UTF-16LE'))
