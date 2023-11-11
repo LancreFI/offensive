@@ -82,9 +82,17 @@ route print
 #System info
 syteminfo
 
+#Always lookout for these: Administrators, Backup Operators, Remote Desktop Users, Remote Management User
+#Remote Desktop Users can leverage RDP
+#Remote Management User can leverage WinRM
+#Backup Operators can operate on files they don't own
+#"Log on as a batch job" user rights enables leveraging scheduled tasks
+#Remember you can elevate with: runas /user:masterAdmin cmd
+
 #User info
 whoami
 Get-LocalUser
+net user username
 whoami /groups
 
 #Group info
@@ -93,3 +101,7 @@ Get-LocalGroupMember groupname
 
 #Process Info
 Get-Process
+
+#Search for files recursively
+Get-ChildItem -Path C:\ -Include *.pdf,*.txt -File -Recurse -ErrorAction SilentlyContinue
+
