@@ -80,7 +80,7 @@ ipconfig /all
 route print
 
 #System info
-syteminfo
+systeminfo
 
 #Always lookout for these: Administrators, Backup Operators, Remote Desktop Users, Remote Management User
 #Remote Desktop Users can leverage RDP
