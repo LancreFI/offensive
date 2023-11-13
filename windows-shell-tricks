@@ -105,3 +105,8 @@ Get-Process
 #Search for files recursively
 Get-ChildItem -Path C:\ -Include *.pdf,*.txt -File -Recurse -ErrorAction SilentlyContinue
 
+#Get user PS command history
+Get-History
+
+#Check where PSReadline history is saved
+(Get-PSReadlineOption).HistorySavePath
