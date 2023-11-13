@@ -94,6 +94,8 @@ whoami
 Get-LocalUser
 net user username
 whoami /groups
+#Check what privileges the user has
+whoami /priv
 
 #Group info
 Get-LocalGroup
@@ -110,3 +112,15 @@ Get-History
 
 #Check where PSReadline history is saved
 (Get-PSReadlineOption).HistorySavePath
+
+#See application startup type
+Get-CimInstance -ClassName win32_service | Select Name, StartMode | Where-Object {$_.Name -like 'apache'}
+
+#Start/stop services
+net start/stop service
+
+#Restart in 1 sec, requires the user having SeShudownPrivilege set
+shutdown /r /t1
+
+#Enable running scripts
+powershell -ep bypass
