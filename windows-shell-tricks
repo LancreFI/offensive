@@ -113,8 +113,14 @@ Get-History
 #Check where PSReadline history is saved
 (Get-PSReadlineOption).HistorySavePath
 
+#See running apps
+Get-CimInstance -ClassName win32_service | Select Name, State, Pathname | Where-Object {$_.State -like 'running'}
+
 #See application startup type
 Get-CimInstance -ClassName win32_service | Select Name, StartMode | Where-Object {$_.Name -like 'apache'}
+
+#Get user rightst for binary
+icacls "c:\path\to\binary.exe"
 
 #Start/stop services
 net start/stop service
