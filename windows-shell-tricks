@@ -94,8 +94,16 @@ whoami
 Get-LocalUser
 net user username
 whoami /groups
+
 #Check what privileges the user has
 whoami /priv
+
+#Add user
+net user username password /add
+net localgroupd Adiministrators username /add
+
+#Change user pass
+net username password
 
 #Group info
 Get-LocalGroup
@@ -124,9 +132,13 @@ icacls "c:\path\to\binary.exe"
 
 #Start/stop services
 net start/stop service
+start-service/stop-service/restart-service service
 
 #Restart in 1 sec, requires the user having SeShudownPrivilege set
 shutdown /r /t1
 
 #Enable running scripts
 powershell -ep bypass
+
+#Show the PATH environment variable
+$env:path
