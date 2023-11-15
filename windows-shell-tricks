@@ -100,7 +100,7 @@ whoami /priv
 
 #Add user
 net user username password /add
-net localgroupd Adiministrators username /add
+net localgroup Adiministrators username /add
 
 #Change user pass
 net username password
@@ -108,6 +108,7 @@ net username password
 #Group info
 Get-LocalGroup
 Get-LocalGroupMember groupname
+net localgroup Administrators 
 
 #Process Info
 Get-Process
