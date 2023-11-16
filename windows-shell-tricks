@@ -74,8 +74,10 @@ Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" |
 
 #List network connections
 netstat -aon
+
 #Show network interfaces
 ipconfig /all
+
 #Show routing table
 route print
 
@@ -104,6 +106,9 @@ net localgroup Adiministrators username /add
 
 #Change user pass
 net username password
+
+#Run with other user credentials (you need the password too)
+runas /user:otheruser powershell
 
 #Group info
 Get-LocalGroup
@@ -148,3 +153,8 @@ powershell -ep bypass
 
 #Show the PATH environment variable
 $env:path
+
+#List scheduled tasks
+Get-ScheduledTask
+schtasks /query /fo LIST /v
+schtasks /query /fo LIST /v /TN "\Microsoft\Task Name"
