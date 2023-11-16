@@ -125,11 +125,16 @@ Get-History
 #See running apps
 Get-CimInstance -ClassName win32_service | Select Name, State, Pathname | Where-Object {$_.State -like 'running'}
 
-#See application startup type
-Get-CimInstance -ClassName win32_service | Select Name, StartMode | Where-Object {$_.Name -like 'apache'}
+#See application startup type and under which user it get started
+Get-CimInstance -ClassName win32_service | Select Name, StartMode, StartName | Where-Object {$_.Name -like 'Apac*'}
 
-#Get user rightst for binary
+#View current user's rightst for binary
 icacls "c:\path\to\binary.exe"
+
+#Check if service name,pathname is unquoted (if it is and contains spaces -> possibility to exploit search order)
+#First findstr is case insensitive and reverse matching, so only paths not in c:\windows\
+#Second findstr also case insensitive and reverse matching, so finds paths not containing quotes
+wmic service get name,pathname |  findstr /i /v "C:\Windows\\" | findstr /i /v """
 
 #Start/stop services
 net start/stop service
