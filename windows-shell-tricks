@@ -100,6 +100,9 @@ whoami /groups
 #Check what privileges the user has
 whoami /priv
 
+#Get path for a bimary
+where powershell
+
 #Add user
 net user username password /add
 net localgroup Adiministrators username /add
