@@ -163,6 +163,7 @@ schtasks /query /fo LIST /v
 schtasks /query /fo LIST /v /TN "\Microsoft\Task Name"
 
 ----
+#Port forwarding
 
 #SSH local port forwarding, listening on all interfaces on on host's port 4455, forwarding through SSH tunnel between current host and 10.0.20.1 to 10.10.10.1 port 5544
 #Meaning: outside<--->host:4455<->host<---SSH TUNNEL--->10.0.20.1<--->10.10.10.1:5544, -N makes sure not to open a shell and -L means local forwarding, no output after password
@@ -183,8 +184,6 @@ ssh -N -R 127.0.0.1:2345:10.10.10.1:5432 user@192.168.12.34
 # -N makes sure not to open a shell and -R means remote forwarding
 # Binds to your hosts loopback port 6666 from the connecting host, authenticating over your host's LAN/WAN side sshd
 ssh -N -R 6666 user@192.168.12.34
-#To use proxychains to pass traffic to socks you just edit socks on /etc/proxychains4.conf to:
-# socks5 127.0.0.1 9998
 
 #Remote port forward <from the socket on your host>:<to the host running plink>:<port to redirect traffic to> <your host ip>
 plink.exe -ssh -l username -pw password -R 127.0.0.1:9833:127.0.0.1:3389 192.168.12.34
@@ -198,3 +197,9 @@ netsh advfirewall firewall add rule name="portforward_ssh_1234" protocol=TCP dir
 
 #Show portproxy rules
 netsh interface portproxy show all
+
+#Using Chisel (https://github.com/jpillora/chisel)
+#Run a Chisel server on your host, bound on port 8080 and enabling reverse port forwarding
+chisel server --port 8008 --reverse
+#On the other end use client and connect to your Chisel server, start the reverse forwarding socks
+chisel client 192.168.12.34:8008 R:socks > /dev/null 2>&1 &
