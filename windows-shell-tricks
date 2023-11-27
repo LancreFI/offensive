@@ -231,8 +231,6 @@ LDAP://DC1.ACME.CORP:389/CN=Dickie,CN=Users,CN=acme,CN=corp
 [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
 #Get DN using ADSI
 ([adsi]'').distinguishedName
-#Get all object in the whole domain
-
 
 
 ##Dynamically obtain the LDAP path using a powershell script, script content:
@@ -246,29 +244,33 @@ $dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
 $dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry)
 
 #And further to enumerate all users in the domain (SamAccountType 0x30000000 => decimal 805306368 == users, see below)
-  #SAM_DOMAIN_OBJECT 0x0
-  #SAM_GROUP_OBJECT 0x10000000
-  #SAM_NON_SECURITY_GROUP_OBJECT 0x10000001
-  #SAM_ALIAS_OBJECT 0x20000000
-  #SAM_NON_SECURITY_ALIAS_OBJECT 0x20000001
-  #SAM_USER_OBJECT 0x30000000
-  #SAM_NORMAL_USER_ACCOUNT 0x30000000
-  #SAM_MACHINE_ACCOUNT 0x30000001
-  #SAM_TRUST_ACCOUNT 0x30000002
-  #SAM_APP_BASIC_GROUP 0x40000000
-  #SAM_APP_QUERY_GROUP 0x40000001
-  #SAM_ACCOUNT_TYPE_MAX 0x7fffffff
-$dirsearcher.filter="samAccountType=805306368"
+  #SAM_DOMAIN_OBJECT 0x0 ------------------------> 0
+  #SAM_GROUP_OBJECT 0x10000000 ------------------> 268435456
+  #SAM_NON_SECURITY_GROUP_OBJECT 0x10000001 -----> 268435457
+  #SAM_ALIAS_OBJECT 0x20000000 ------------------> 536870912
+  #SAM_NON_SECURITY_ALIAS_OBJECT 0x20000001 -----> 536870913
+  #SAM_USER_OBJECT 0x30000000 -------------------> 805306368
+  #SAM_NORMAL_USER_ACCOUNT 0x30000000 -----------> 805306368
+  #SAM_MACHINE_ACCOUNT 0x30000001 ---------------> 805306369
+  #SAM_TRUST_ACCOUNT 0x30000002 -----------------> 805306370
+  #SAM_APP_BASIC_GROUP 0x40000000 ---------------> 1073741824
+  #SAM_APP_QUERY_GROUP 0x40000001 ---------------> 1073741825
+  #SAM_ACCOUNT_TYPE_MAX 0x7fffffff --------------> 2147483647
+$dir_searcher.filter="samAccountType=805306368"
+##You could also filter by any property, for example: $dir_searcher.filter="name=jeffadmin" would only display info for jeffadmin
 $dirsearcher.FindAll()
 
 #And still further, save the result on the previous part's last line to a variable
 $user_results = $dirsearcher.FindAll()
-#Print all properties per user over a for loop
+#Print all attributes stored in per user properties field over a for loop (produces a LOT of output)
 Foreach($user_obj in $user_result)
 {
     Foreach($prop in $user_obj.Properties)
     {
         $prop
+        #You could also filter the results by property, for example $prop.memberof would display only the groups the user is a member in
     }
-    Write-Host "####"
+    Write-Host "####----------####----------####"
 }
+
+
