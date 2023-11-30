@@ -36,8 +36,8 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
 <------------------------------------------------------------------------------------------------------->
   
   Also some other stuff can be done with '<param1>':
-  '<param1>' == 'dcinfo'     -->  Prints out DC name, OS, OS version, IPv4 and IPv6
-  '<param1>' == 'deviceinfo' -->  Prints out AD devices' info: Name, OS, OS SP, OS version, IPv4 and IPv6
+  '<param1>' == 'dcinfo'     -->  Prints out DC name, hostname, OS, OS version, IPv4 and IPv6
+  '<param1>' == 'deviceinfo' -->  Prints out AD devices' info: Name, hostname, OS, OS SP, OS version, IPv4 and IPv6
   
   For example:
   .\enumhelper.ps1 'dcinfo'
@@ -65,13 +65,13 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
 }
 elseif ($ldap_query.ToUpper() -eq "DCINFO")
 {
-	Get-ADDomainController -Filter * | Format-Table Name, OperatingSystem, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto
+	Get-ADDomainController -Filter * | Format-Table Name, Hostname, OperatingSystem, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto
 	exit
 }
 elseif ($ldap_query.ToUpper() -eq "DEVICEINFO")
 {
 	Get-ADComputer -Filter * -Property * `
-	| Format-Table Name, OperatingSystem, OperatingSystemServicePack, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto	
+	| Format-Table Name, DNSHostname, OperatingSystem, OperatingSystemServicePack, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto	
 	exit
 }
 
