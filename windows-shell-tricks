@@ -232,6 +232,11 @@ LDAP://DC1.ACME.CORP:389/CN=Dickie,CN=Users,CN=acme,CN=corp
 #Get DN using ADSI
 ([adsi]'').distinguishedName
 
+#Get DC Name, OS, OS version and IPv4/6, or leave out the filter for full info and filter what needed
+Get-ADDomainController -Filter * | Format-Table Name, OperatingSystem, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto
+
+#Get the Name, OS, OS SP, OS version and IPv4/6 for all devices in domain, or again remove filter and get even more and adjust the filter to your needs
+Get-ADComputer -Filter * -Property * | Format-Table Name, OperatingSystem, OperatingSystemServicePack, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto
 
 ##Dynamically obtain the LDAP path using a powershell script, script content:
 $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
@@ -274,3 +279,4 @@ Foreach($user_obj in $user_result)
 }
 
 You can also just use the https://github.com/LancreFI/offensive/blob/main/enumhelper.ps1 helper script for enumeration.
+Or if you want more, go for https://github.com/PowerShellMafia/PowerSploit/
