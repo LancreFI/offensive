@@ -14,7 +14,7 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
 {
   Write-Host "
  
- Usage: .\enumhelper.ps1 '<param1>' '<param2>'
+  Usage: .\enumhelper.ps1 '<param1>' '<param2>'
  
   You can also use the script without parameters to do LDAP lookups,
   and you will be prompted for the lookup query.
@@ -55,13 +55,14 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   exit
 }
 
-function ldap_search {	
+function ldap_search 
+{	
     $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
     $dn = ([adsi]'').distinguishedName
     $ldap_path = "LDAP://$pdc/$dn"
     $dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
     $dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry, $ldap_query)	
-	return $dir_searcher.FindAll()
+    return $dir_searcher.FindAll()
 }
 
 $ldap_query_res = ldap_search
