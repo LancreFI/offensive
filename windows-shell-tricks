@@ -273,4 +273,4 @@ Foreach($user_obj in $user_result)
     Write-Host "####----------####----------####"
 }
 
-
+You can also just use the https://github.com/LancreFI/offensive/blob/main/enumhelper.ps1 helper script for enumeration.
