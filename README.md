@@ -5,6 +5,9 @@ Tips and tricks etc.
 A WordPres plugin containing reverse shell. Prerequirements: you need access to the WP to upload and activate plugins.
 Just change the host/port to whatever your listener is running on and maybe adjust the shell accordingly too, then just zip it, upload the zip as a plugin and activate the plugin to get connected with the WP-instance.
 
+#enumhelper.ps1
+A PowerShell helper script for AD enumeration. Check the .\enumhelper.ps1 "help" for guidance.
+
 #nix-shell-tricks
 Common tips and tricks etc. to use in Linux shell when being offensive or otherwise enumerating
 
