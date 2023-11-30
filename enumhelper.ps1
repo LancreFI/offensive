@@ -67,18 +67,29 @@ function ldap_search
 
 $ldap_query_res = ldap_search
 
+Write-Host ""
+Write-Host "###--------------RESULTS--------------------###"
 if ($ldap_property -eq "")
 {
 	return $ldap_query_res
 }
 elseif ($ldap_property.ToUpper() -eq "L")
 {
-	return $ldap_query_res.properties
+	foreach ($query_object in $ldap_query_res)
+	{
+		Write-Host ""
+		$query_object.properties
+		Write-Host ""
+		Write-Host "###-----------------------------------------###"
+	}
 }
 else
 {
 	foreach ($query_object in $ldap_query_res) 
 	{
+		Write-Host ""
 		$query_object.properties.item($ldap_property)
+		Write-Host ""
+		Write-Host "###-----------------------------------------###"
 	}
 }
