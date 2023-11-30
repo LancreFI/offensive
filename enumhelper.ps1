@@ -13,15 +13,13 @@ param (
 if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
 {
   Write-Host "
+<------------------------------------------------------------------------------------------------------->
  
-  Usage: .\enumhelper.ps1 '<param1>' '<param2>'
+ Usage: .\enumhelper.ps1 '<param1>' '<param2>'
  
-  You can also use the script without parameters to do LDAP lookups,
-  and you will be prompted for the lookup query.
- 
- 
-  The '<param1>' is mandatory, '<param2>' optional.
+  The '<param1>' is mandatory, if not defined will be prompted, '<param2>' optional.
 
+<------------------------------------------------------------------------------------------------------->
   
   Using the parameters: '<param1>' == LDAP query, for example:
   .\enumhelper.ps1 '(&(SamAccountType=805306368)(name=p00p))'
@@ -35,6 +33,17 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   or
   .\enumhelper.ps1 '(&(SamAccountType=805306368)(name=p00p))' 'whencreated'  
   
+<------------------------------------------------------------------------------------------------------->
+  
+  Also some other stuff can be done with '<param1>':
+  '<param1>' == 'dcinfo'     -->  Prints out DC name, OS, OS version, IPv4 and IPv6
+  '<param1>' == 'deviceinfo' -->  Prints out AD devices' info: Name, OS, OS SP, OS version, IPv4 and IPv6
+  
+  For example:
+  .\enumhelper.ps1 'dcinfo'
+  .\enumhelper.ps1 'deviceinfo'
+  
+<------------------------------------------------------------------------------------------------------->
   
   For reminder, the SamAccountTypes to query for, you need to use the decimal notation:
   #SAM_DOMAIN_OBJECT 0x0 ------------------------> 0
@@ -50,19 +59,29 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   #SAM_APP_QUERY_GROUP 0x40000001 ---------------> 1073741825
   #SAM_ACCOUNT_TYPE_MAX 0x7fffffff --------------> 2147483647
 
-
+<------------------------------------------------------------------------------------------------------->
   "
   exit
 }
+elseif ($ldap_query.ToUpper() -eq "DCINFO")
+{
+	Get-ADDomainController -Filter * | Format-Table Name, OperatingSystem, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto
+	exit
+}
+elseif ($ldap_query.ToUpper() -eq "DEVICEINFO")
+{
+	Get-ADComputer -Filter * -Property * `
+	| Format-Table Name, OperatingSystem, OperatingSystemServicePack, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto	
+	exit
+}
 
-function ldap_search 
-{	
+function ldap_search {	
     $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
     $dn = ([adsi]'').distinguishedName
     $ldap_path = "LDAP://$pdc/$dn"
     $dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
     $dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry, $ldap_query)	
-    return $dir_searcher.FindAll()
+	return $dir_searcher.FindAll()
 }
 
 $ldap_query_res = ldap_search
