@@ -117,6 +117,14 @@ runas /user:otheruser powershell
 Get-LocalGroup
 Get-LocalGroupMember groupname
 net localgroup Administrators 
+Get-ADGroup groupname
+Get-ADGroup -Filter "name -like '*Leaders*'"
+
+#Check users belonging to a group
+Get-ADGroupMember "Group Leaders"
+
+#Add user to group
+net group "Group Leaders" username /add /domain
 
 #Process Info
 Get-Process
@@ -244,7 +252,7 @@ $dn = ([adsi]'').distinguishedName
 $ldap_path = "LDAP://$pdc/$dn"
 
 #Add to script to further enumerate
-#Get all object in the whole domain into dir_searcher variable
+#Get all objects in the whole domain into dir_searcher variable
 $dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
 $dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry)
 
@@ -261,8 +269,9 @@ $dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry
   #SAM_APP_BASIC_GROUP 0x40000000 ---------------> 1073741824
   #SAM_APP_QUERY_GROUP 0x40000001 ---------------> 1073741825
   #SAM_ACCOUNT_TYPE_MAX 0x7fffffff --------------> 2147483647
+
 $dir_searcher.filter="samAccountType=805306368"
-##You could also filter by any property, for example: $dir_searcher.filter="name=jeffadmin" would only display info for jeffadmin
+##You could also filter by any property, for example: $dir_searcher.filter="name=bob_admin" would only display info for bob_admin
 $dirsearcher.FindAll()
 
 #And still further, save the result on the previous part's last line to a variable
@@ -280,3 +289,72 @@ Foreach($user_obj in $user_result)
 
 You can also just use the https://github.com/LancreFI/offensive/blob/main/enumhelper.ps1 helper script for enumeration.
 Or if you want more, go for https://github.com/PowerShellMafia/PowerSploit/
+
+----
+
+##Using PowerView from the above mentioned PowerSploit
+
+#Find-LocalAdminAccess will attempt to find if the user has admin access on a target machine or the whole domain
+#without parameters this will scan the whole domain, but you can also just define a specific host as target and even user/pass
+Find-LocalAdminAccess
+
+#Get-NetSession can try to be leveraged to check if there are any users logged in. It leverages NetWkstaUserEnum and NetSessionEnum APIs to
+#accomplish this
+Get-NetSession -ComputerName targethost -Verbose
+
+#NetSessionEnum has five query levels:  0,1,2,10,502 out of which level 10 is used by PowerView, levels 1 and 2 return the most info
+#but require more privileges (admin). HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity hive contains
+#the permissions required to enumerate session via NetSessionEnum (readkey or fullcontrol) in the SrvsvcSessionInfo registry key. To view the 
+#permissions you can use PS applet Get-Acl: Get-Acl -Path HKLM:SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity\ | fl
+#In older versions of Windows Authenticated Users were allowed to access the registry hive and get information from the SrvsvcSessionInfo key:
+#Version before Windows 10 version 16299 == build 1709 and Windows Server 2019 version 17763 == build 1809
+
+#PsLoggedOn from https://learn.microsoft.com/en-us/sysinternals/ can be used to list the logged on users, but relies on Remote Registry 
+#service, which needs to be enabled by the admin since Windows 8, by default it is also enable on Windows Server Operating Systems, like 
+#Server 2012 R2, 2016 (1607), 2019 (1809), and Server 2022 (21H2) and will be triggered by PsLoggedOn
+.\PsLoggedon.exe \\server01
+
+#Enumerate SPNs
+Get-NetUser -SPN | select samaccountname,serviceprincipalname
+----
+
+##Enumerating service accounts
+
+#Services registered in AD have a Service Principal Name (SPN) which links it to a specific service account, so you can retrieve information
+#about running services without necessarily doing large and noisy port scans. If you know for example that a service account called
+#sql_serv exists, you can check which service it is tied to by saying the following or checking the previous part about PowerView:
+setspn -L sql_serv
+
+#Access Controls Lists (ACL) are made of Access Control Entries.
+#Interesting Access Control Entry (ACE) types and descriptions:
+# -AllExtendedRights = Change and reset password etc.
+# -ForceChangePassword = Can change the password for an object
+# -GenericAll = Full permissions on an object
+# -GenericWrite = Edit some of the object's attributes
+# -Self (Self-Membership) = Add ourselves to a group for example
+# -WriteOwner = Change object ownership
+# -WriteDACL = Edit ACEs applied to object
+
+#PowerView's Get-ObjectAcl can be used to enumerate ACEs
+Get-ObjectAcl 
+#And further filter it by applying -Identity username
+Get-ObjectAcl -Identity username
+
+#Some of the interesting artifacts are Security Identifiers (SID), which are a mess to decipher on the fly but can be automatically done
+#with PowerView
+Convert-SidToName S-1-5-21-809893099-1472282828-2400958209-1105
+#without PowerView
+Get-ADUser -Identity S-1-5-21-809893099-1472282828-2400958209-1105
+
+#If you don't know the type of the SID, you can go through the whole AD:
+Get-ADObject -IncludeDeletedObjects -Filter "objectSid -eq 'S-1-5-21-809893099-1472282828-2400958209-1105'"|select Name,ObjectClass
+
+#To find out which SIDs have the highest rights (GenericAll) we can use some extra filtering. Filtering by group:
+Get-ObjectAcl -Identity "Group Leaders" | ? {$_.ActiveDirectoryRights -eq "GenericAll"} | select SecurityIdentifier,ActiveDirectoryRights
+
+#Add user to group
+net group "Group Leaders" username /add /domain
+#Check members of group with powerview
+Get-NetGroup "Group Leaders" | select member
+#Without
+Get-ADGroupMember "Group Leaders" | select username
