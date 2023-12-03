@@ -316,6 +316,7 @@ Get-NetSession -ComputerName targethost -Verbose
 
 #Enumerate SPNs
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
+
 ----
 
 ##Enumerating service accounts
