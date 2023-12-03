@@ -20,5 +20,5 @@ Not my creation, credit goes to INSOMNIA SECURITY :: InsomniaShell.aspx, brett.m
 #winbin.sh
 Whip up custom executable/dll on the fly. So far only supports creating a x64 executable/dll for adding a defined user with a defined password to the Administrators group or changing an existing user's password. For example if you need to replace a bin which you have full control over to gain further foothold or to leverage a missing DLL etc.
 
-#windows-shell-tricks
-Common tips and tricks etc. to use with PowerShell / cmd when being offensive or otherwise enumerating
+#windows-shell-tricks-and-ad-tips
+Common tips and tricks etc. to use with PowerShell / cmd when being offensive or otherwise enumerating and getting to know AD
