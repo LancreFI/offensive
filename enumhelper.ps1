@@ -60,6 +60,7 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   .\enumhelper.ps1 'spncheck' 'sql_service'
   .\enumhelper.ps1 'checksid' 'S-1-5-21-809893099-1472282828-2400958209-1105'
   .\enumhelper.ps1 'findsid' 'S-1-5-21-809893099-1472282828-2400958209-1105'
+  
 <------------------------------------------------------------------------------------------------------->
   
   And then there's '<param3>' which can be used to do user/pass queries against the AD:
