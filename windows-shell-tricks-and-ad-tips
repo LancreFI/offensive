@@ -413,3 +413,37 @@ bloodhound
 # 5: Server sends response, nonce and username to DC
 # 6: DC encrypts nonce with NTLM hash and checks it against the received response (DC has all user hashes)
 # 7: If response and encrypted nonce match, authentication approval is sent to server
+
+#Kerberos
+#The timestamp in AS-REQ is encrypted with a hash derived from the username and password, which in turn is decrypted by KDC, if succesful and the
+#timestamp is not duplicate, the auth is considered successful. An Authentication Server Reply (AS-REP) is sent back to the client from the KDC.
+#The AS-REP contains a session key, encrypted with the user's password hash (which can be decrypted by the client and reused), and a Ticket Granting 
+#Ticket (TGT). The TGT contains information of the user, domain, timestamp, client IP and session key. For security the TGT is encrypted with the NTLM 
+#hash of krbtgt account (only known to KDC), which can only be decrypted by KDC. Default validity period for TGT is 10 hours, and renewal doesn't 
+#require user to enter password again. KDC now considers the auth complete.
+# 1: Client sends Authentication Server Request (AS-REQ) to DC acting as a Key Distribution Center (KDC)
+# 2: DC replies with Authentication Server Reply
+# 3: Client send Ticket Granting Service Request to DC
+# 4: DC replies with Ticket Granting Service Reply
+# 5: Client send Application Request to Application Server
+# 6: Application Server replies with Service Authentication
+
+#When client wishes to access services it needs to construct a Ticket Granting Service Request (TGS-REQ) consisting of the user, session key encrypted 
+#timestamp. name of the resource and the encrypted TGT and send it to KDC. If the resource is in the domain KDC will then decrypt TGT, extract the
+#session key and decrypt the username and timestamp with it:
+# 1: Timestamp needs to be valid
+# 2: TGS-REQ username must match the TGT username
+# 3: Client IP must match the client IP in TGT
+#If all requirements are met, KDC sends a TGS-REP containing:
+# 1: Name of service access is granted to
+# 2: Session key to be used between the service and client
+# 3: Service Ticket with username and group memebership along with the created session key
+#Service ticket's session key and service name are encrypted with the original session key from the creation of the TGT.
+#Service ticket is encrypted with with the password hash of the service account where the service is registered under.
+
+#Now the KDC auth process is complete and the client has both a session key and a service ticket to begin the service authentication with.
+# 1: Client sends an Application Request (AP-REQ) including username, service ticket session key encrypted timestamp and the service ticket
+# 2: App server decrypts the service ticket with the service account's password hash, extracting the username and session key
+# 3: App server then decrypts the username from the AP-REQ with the extracted session key
+# 4: If the extracted username matches the one from the service ticket the request is accepted
+# 5: Before granting access supplied group memberships in the service ticket are inspected and the user assigned the appropriate permissions
