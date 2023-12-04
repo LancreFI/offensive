@@ -9,7 +9,10 @@ param (
     [string]$ldap_query,
 	
 	[Parameter(Mandatory=$false)]
-	[string]$ldap_property = "l")
+	[string]$ldap_property = "l",
+	
+	[Parameter(Mandatory=$false)]
+	[string]$ldap_pasw)
 
 #Script help
 if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
@@ -17,9 +20,9 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   Write-Host "
 <------------------------------------------------------------------------------------------------------->
  
- Usage: .\enumhelper.ps1 '<param1>' '<param2>'
+ Usage: .\enumhelper.ps1 '<param1>' '<param2>' '<param3>'
  
-  The '<param1>' is mandatory, if not defined will be prompted, '<param2>' optional.
+  The '<param1>' is mandatory, if not defined will be prompted, '<param2>' & '<param3>' are optional.
 
 <------------------------------------------------------------------------------------------------------->
   
@@ -57,7 +60,14 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   .\enumhelper.ps1 'spncheck' 'sql_service'
   .\enumhelper.ps1 'checksid' 'S-1-5-21-809893099-1472282828-2400958209-1105'
   .\enumhelper.ps1 'findsid' 'S-1-5-21-809893099-1472282828-2400958209-1105'
+<------------------------------------------------------------------------------------------------------->
   
+  And then there's '<param3>' which can be used to do user/pass queries against the AD:
+  '<param1>' == 'auth' '<param2>' == 'username'  '<param3>' == 'password'
+  
+  For example:
+  .\enumhelper.ps1 'auth' 'megaAdmin' 'verySecurePassword'
+
 <------------------------------------------------------------------------------------------------------->
   
   For reminder, the SamAccountTypes to query for, you need to use the decimal notation:
@@ -168,9 +178,24 @@ function ldap_search {
     $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
     $dn = ([adsi]'').distinguishedName
     $ldap_path = "LDAP://$pdc/$dn"
-    $dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
-    $dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry, $ldap_query)	
-	return $dir_searcher.FindAll()
+    if ($ldap_query.ToUpper() -eq "AUTH")
+	{
+		$ldap_login_res = New-Object System.DirectoryServices.DirectoryEntry($ldap_path, $ldap_property, $ldap_pasw)
+		if (-not $ldap_login_res.DistinguishedName)
+		{
+			return $false
+		}
+		else
+		{
+			return $true
+		}
+	}
+	else
+	{
+		$dir_entry = New-Object System.DirectoryServices.DirectoryEntry($ldap_path)
+		$dir_searcher = New-Object System.DirectoryServices.DirectorySearcher($dir_entry, $ldap_query)	
+		return $dir_searcher.FindAll()
+	}
 }
 
 $ldap_query_res = ldap_search
@@ -178,10 +203,24 @@ $ldap_query_res = ldap_search
 #Print the LDAP-query results based on the paramaters from commandline
 Write-Host ""
 Write-Host "###--------------RESULTS--------------------###"
+Write-Host ""
 #Full query
-if ($ldap_property -eq "")
+if ($ldap_property -eq "" -or $ldap_query.ToUpper() -eq "AUTH")
 {
-	return $ldap_query_res
+	if ($ldap_query_res)
+	{
+		Write-Host 'Credentials match ('$ldap_property' / '$ldap_pasw' )'
+		Write-Host ""
+	}
+	elseif (-not $ldap_query_res)
+	{
+		Write-Host 'Credentials do not match ('$ldap_property' / '$ldap_pasw' )'
+		Write-Host ""
+	}
+	else
+	{
+		return $ldap_query_res
+	}
 }
 #List properties for the queried object
 elseif ($ldap_property.ToUpper() -eq "L")
