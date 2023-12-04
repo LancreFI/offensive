@@ -447,3 +447,7 @@ bloodhound
 # 3: App server then decrypts the username from the AP-REQ with the extracted session key
 # 4: If the extracted username matches the one from the service ticket the request is accepted
 # 5: Before granting access supplied group memberships in the service ticket are inspected and the user assigned the appropriate permissions
+
+#As SSO is being used by Kerberos in MS environ the password hashes are stored in Local Security Authority Subsystem Service (LSASS). One would still
+#need LA or SYSTEM creds to extract these and try to decrypt passwords from the hashes with for example Mimikatz (not preferrably being run on the target
+#as it is so well known that you will get caught red handed).
