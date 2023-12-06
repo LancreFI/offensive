@@ -19,20 +19,20 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
 {
   Write-Host "
 <------------------------------------------------------------------------------------------------------->
- 
+  
  Usage: .\enumhelper.ps1 '<param1>' '<param2>' '<param3>'
- 
+  
   The '<param1>' is mandatory, if not defined will be prompted, '<param2>' & '<param3>' are optional.
-
+ 
 <------------------------------------------------------------------------------------------------------->
   
   Using the parameters: '<param1>' == LDAP query, for example:
   .\enumhelper.ps1 '(&(SamAccountType=805306368)(name=p00p))'
-
-  
+ 
+   
   Using the optional: '<param2>' == 'L' to list all properties for the LDAP-response object
                       '<param2>' == 'property' to print only the chosen property's value
-					  
+ 					  
   For example:
   .\enumhelper.ps1 '(&(SamAccountType=805306368)(name=p00p))' 'L'
   or
@@ -98,7 +98,7 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
   
  <------------------------------------------------------------------------------------------------------->
  
-  "
+  " -BackgroundColor Green -ForegroundColor Black
   exit
 }
 #Check the info for the DC
@@ -123,7 +123,7 @@ elseif ($ldap_query.ToUpper() -eq "CHECKSPN")
 	}
 	else
 	{
-		Write-Host 'Check the service account name!'
+		Write-Host 'Check the service account name!' -ForegroundColor Red
 	}
 	exit
 }
@@ -137,7 +137,7 @@ elseif ($ldap_query.ToUpper() -eq "CHECKSID" -or $ldap_query.ToUpper() -eq "FIND
 			$result = Get-ADObject -IncludeDeletedObjects -Filter "objectSid -eq '$ldap_property'"|select Name,ObjectClass
 			if (-not $result)
 			{
-				Write-Host 'Nothing matching that SID in AD'
+				Write-Host 'Nothing matching that SID in AD' -ForegroundColor Red
 			}
 			else
 			{	
@@ -147,29 +147,29 @@ elseif ($ldap_query.ToUpper() -eq "CHECKSID" -or $ldap_query.ToUpper() -eq "FIND
 		else
 		{
 			Write-Host ''
-			Write-Host '----CHECKING FROM USERS----'
+			Write-Host '----CHECKING FROM USERS----'  -ForegroundColor Yellow
 			try{
 				Get-ADUser -Identity $ldap_property
 			}
 			catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
 			{
-				Write-Host 'The SID was not found from the AD users!'
+				Write-Host 'The SID was not found from the AD users!' -ForegroundColor Red
 			}
-			Write-Host ''
-			Write-Host '----CHECKING FROM GROUPS----'
+			Write-Host '' 
+			Write-Host '----CHECKING FROM GROUPS----'  -ForegroundColor Yellow
 			try{
 				Get-ADGroup -Identity $ldap_property
 			}
 			catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
 			{
-				Write-Host 'The SID was not found from AD members!'
+				Write-Host 'The SID was not found from AD members!' -ForegroundColor Red
 			}
 			Write-Host ''
 		}
 	}
 	else
 	{
-		Write-Host 'Recheck the SID!'
+		Write-Host 'Recheck the SID!' -ForegroundColor Red
 	}
 	exit
 }
@@ -203,19 +203,19 @@ $ldap_query_res = ldap_search
 
 #Print the LDAP-query results based on the paramaters from commandline
 Write-Host ""
-Write-Host "###--------------RESULTS--------------------###"
+Write-Host "###--------------RESULTS--------------------###" -ForegroundColor Yellow
 Write-Host ""
 #Full query
 if ($ldap_property -eq "" -or $ldap_query.ToUpper() -eq "AUTH")
 {
 	if ($ldap_query_res)
 	{
-		Write-Host 'Credentials match ('$ldap_property' / '$ldap_pasw' )'
+		Write-Host 'Credentials match ('$ldap_property' / '$ldap_pasw' )' -ForegroundColor Green
 		Write-Host ""
 	}
 	elseif (-not $ldap_query_res)
 	{
-		Write-Host 'Credentials do not match ('$ldap_property' / '$ldap_pasw' )'
+		Write-Host 'Credentials do not match ('$ldap_property' / '$ldap_pasw' )' -ForegroundColor Red
 		Write-Host ""
 	}
 	else
@@ -231,7 +231,7 @@ elseif ($ldap_property.ToUpper() -eq "L")
 		Write-Host ""
 		$query_object.properties
 		Write-Host ""
-		Write-Host "###-----------------------------------------###"
+		Write-Host "###-----------------------------------------###"  -ForegroundColor Yellow
 	}
 }
 #List the queried objects values for a specific item
@@ -242,6 +242,6 @@ else
 		Write-Host ""
 		$query_object.properties.item($ldap_property)
 		Write-Host ""
-		Write-Host "###-----------------------------------------###"
+		Write-Host "###-----------------------------------------###" -ForegroundColor Yellow
 	}
 }
