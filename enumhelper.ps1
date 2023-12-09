@@ -41,11 +41,13 @@ if ($ldap_query.ToUpper() -eq "HELP" -or $ldap_query.ToUpper() -eq "H")
 <------------------------------------------------------------------------------------------------------->
   
   Also some other stuff can be done with '<param1>':
+  '<param1>' == 'spnlist'    -->  Prints out all SPNs and related objects
   '<param1>' == 'dcinfo'     -->  Prints out DC name, hostname, OS, OS version, IPv4 and IPv6
   '<param1>' == 'deviceinfo' -->  Prints out AD devices' info: Name, hostname, OS, OS SP, OS version, 
                                   IPv4 and IPv6
   
   For example:
+  .\enumhelper.ps1 'spnlist'
   .\enumhelper.ps1 'dcinfo'
   .\enumhelper.ps1 'deviceinfo'
   
@@ -177,7 +179,7 @@ elseif ($ldap_query.ToUpper() -eq "CHECKSID" -or $ldap_query.ToUpper() -eq "FIND
 #LDAP-search  function
 function ldap_search {	
     $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
-    $dn = ([adsi]'').distinguishedName
+    $dn = ([ADSI]'').distinguishedName
     $ldap_path = "LDAP://$pdc/$dn"
     if ($ldap_query.ToUpper() -eq "AUTH")
 	{
@@ -190,6 +192,13 @@ function ldap_search {
 		{
 			return $true
 		}
+	}
+	elseif ($ldap_query.ToUpper() -eq "SPNLIST")
+	{
+		$spn_search = New-Object DirectoryServices.DirectorySearcher([ADSI]"")
+		$spn_search.filter = "(servicePrincipalName=*)"
+		$spn_search_res = $spn_search.Findall()
+		return $spn_search_res
 	}
 	else
 	{
@@ -221,6 +230,24 @@ if ($ldap_property -eq "" -or $ldap_query.ToUpper() -eq "AUTH")
 	else
 	{
 		return $ldap_query_res
+	}
+}
+elseif ($ldap_query.ToUpper() -eq "SPNLIST")
+{
+	foreach( $result in $ldap_query_res )
+	{
+		$userEntry = $result.GetDirectoryEntry()
+		Write-host "Object Name =  "	$userEntry.name -ForeGroundColor "black" -BackgroundColor "gray"
+		Write-host "DN          =  "	$userEntry.distinguishedName -ForeGroundColor "black" -BackgroundColor "gray"
+		Write-host "Object Cat. =  " $userEntry.objectCategory -ForeGroundColor "black" -BackgroundColor "gray"
+		Write-host "servicePrincipalNames" -ForeGroundColor "black"
+		$i=1
+		foreach( $SPN in $userEntry.servicePrincipalName ) 
+		{
+			Write-host "SPN ${i} = $SPN" -ForeGroundColor "yellow" -BackgroundColor "gray"
+			$i+=1
+		}
+		Write-host ""
 	}
 }
 #List properties for the queried object
