@@ -93,9 +93,13 @@ systeminfo
 
 #User info
 whoami
-Get-LocalUser
-net user username
 whoami /groups
+Get-LocalUser
+#Local
+net user username
+#AD
+net user /domain username
+
 
 #Show account policy (password requirements, lockout threshold etc.)
 net accounts
@@ -231,6 +235,27 @@ net group /domain
 
 #Enumerate group members
 net group "CasualAdmins" /domain
+
+#Get all SPNs via CMD
+dsquery * "ou=domain controllers,dc=testad,dc=local" -filter "(&(objectcategory=computer)(servicePrincipalName=*))" -attr distinguishedName servicePrincipalName
+#Or via Powershell
+$search = New-Object DirectoryServices.DirectorySearcher([ADSI]"")
+$search.filter = "(servicePrincipalName=*)"
+$results = $search.Findall()
+foreach( $result in $results ) {
+	$userEntry = $result.GetDirectoryEntry()
+	Write-host "Object Name	=	"	$userEntry.name -backgroundcolor "yellow" -foregroundcolor "black"
+	Write-host "DN	=	"	$userEntry.distinguishedName
+	Write-host "Object Cat.	=	" $userEntry.objectCategory
+	Write-host "servicePrincipalNames"
+	$i=1
+	foreach( $SPN in $userEntry.servicePrincipalName ) {
+		Write-host "SPN ${i} =$SPN"
+		$i+=1
+	}
+	Write-host ""
+}
+#Or you can use the enumhelper.ps1
 
 #LDAP-path prototype: LDAP://HostName[:PortNumber][/DistinguishedName], by default the port is either 389 (LDAP) or 636 (LDAPS TLS/SSL)
 #CN == CommonName, DN == DistinguishedName, DC == DomainComponent (when referring to DN, otherwise DomainController)
@@ -577,3 +602,4 @@ sudo hashcat -m 13100 kerberoasted.hashes /home/user/tools/wordlists/rockyou.txt
 privilege::debug
 sekurlsa::logonpasswords
 #The Domain SID can be obtained from the previous or by issuing whoami /user (remember to omit RID (the last part))
+#
