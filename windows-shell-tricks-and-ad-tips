@@ -81,6 +81,9 @@ ipconfig /all
 #Show routing table
 route print
 
+#Get hostname for IP
+[system.net.dns]::gethostentry('192.168.12.34')
+
 #System info
 systeminfo
 
@@ -102,7 +105,6 @@ net user /domain username
 
 #Show in-memory tickets
 klist
-
 
 #Show account policy (password requirements, lockout threshold etc.)
 net accounts
@@ -635,3 +637,8 @@ target-username:1025:bad1d471e70812ebcaa1e913e80401da:12e3d45c6b7a89b01b2cde3456
 wmic /node:192.168.23.45 /user:username /password:password1! process call create "calc"
 #This should return the PID and return value 0, indicating a succesful process creation
 
+#Access over WinRM, for example using WinRS
+winrs -r:dc.testad.local -u:b0b -p:SuperAdmin  "cmd /c hostname & whoami"
+#Or you can just push in a remote shell as the command if you will
+
+#To access with WMI over PowerShell or just PowerShell remoting check out the enumhelper.ps1
