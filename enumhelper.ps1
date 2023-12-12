@@ -38,7 +38,7 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   Write-Host "
 <------------------------------------------------------------------------------------------------------->
   
- Usage: .\enumhelper.ps1 '<param1>' '<param2>' '<param3>' '<param4>' '<param5>'
+ Usage: .\enumhelper.ps1 '<param1>' '<param2>' '<param3>' '<param4>' '<param5>' '<param6>' '<param7>'
   
   The '<param1>' is mandatory, if not defined will be prompted, the rest are optional.
  
