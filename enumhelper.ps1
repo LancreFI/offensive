@@ -5,12 +5,18 @@
 #>
 #Parameters
 param (
+    #[Parameter(Mandatory=$true)]
+    #[string]$ldap_query,
 	[Parameter(Mandatory=$true)]
-	[string]$param1,
+    [string]$param1,
 	
+	#[Parameter(Mandatory=$false)]
+	#[string]$ldap_property = "l",
 	[Parameter(Mandatory=$false)]
 	[string]$param2 = "l",
 	
+	#[Parameter(Mandatory=$false)]
+	#[string]$ldap_pasw)
 	[Parameter(Mandatory=$false)]
 	[string]$param3,
 	
@@ -104,8 +110,13 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
  
 <------------------------------------------------------------------------------------------------------->
  
-  With some additional parameters '<param4>' and '<param5>' we can try to run remote commands over WMI
-  or WINRS:
+ By expanding further using '<param4>', you can try to remote over PowerShell, where
+  '<param1>' == 'psremote' '<param2>' == 'username' '<param3>' == 'password' '<param4>' == 'hostname'
+  
+  For example:
+  .\enumhelper.ps1 'psremote' 'adminusername' 'adminpassword' 'dc1.testad.local'
+ 
+ With adding '<param5>' we can try to run remote commands over WMI or WINRS:
   '<param1>' == 'wmi' '<param2>' == 'username'  '<param3>' == 'password'  '<param4>' == target IP
   '<param5>' == remote command to run
   or
@@ -131,7 +142,7 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   exit
 }
 #Run commands over WMI
-elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS")
+elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param1.ToUpper() -eq "PSREMOTE")
 {
 	if ($param2 -ne "1" -and $param2 -and $param3)
 	{
@@ -146,7 +157,14 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS")
 			$password = ConvertTo-SecureString $insecure_password -AsPlaintext -Force
 		}
 		$computer = $param4
-		$command = $param5
+		if ($param1.ToUpper() -ne "PSREMOTE")
+		{
+			$command = $param5
+		}
+		else
+		{
+			$command = "fake_command"	
+		}
 	}
 	else
 	{
@@ -157,13 +175,20 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS")
 			{
 				$password = Read-Host -prompt 'Password: '
 				$computer = Read-Host -prompt 'Target hostname: '
+				$command = Read-Host -prompt 'Command to run: '
 			}
-			else
+			elseif ($param1.ToUpper() -eq "WMI")
 			{
 				$password = Read-Host -prompt 'Password: ' -AsSecureString
 				$computer = Read-Host -prompt 'Target IP: '
+				$command = Read-Host -prompt 'Command to run: '
 			}
-			$command = Read-Host -prompt 'Command to run: '
+			elseif ($param1.ToUpper() -eq "PSREMOTE")
+			{
+				$password = Read-Host -prompt 'Password: ' -AsSecureString
+				$computer = Read-Host -prompt 'Target hostname: '
+				$command = "fake_command"
+			}
 		}
 	}
 	#Run reverse shell command
@@ -186,19 +211,59 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS")
 	}
 	
 	Write-Host ""
-	if ($param1.ToUpper() -eq "WMI")
+	if ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "PSREMOTE")
 	{
-		Write-Host "###--------------WMIC-RUN--------------------###" -ForegroundColor Yellow
-		Write-Host ""
 		try
 		{
 			$credential = New-Object System.Management.Automation.PSCredential $username, $password
-			$options = New-CimSessionOption -Protocol DCOM -ErrorAction stop
-			$params = @{'ComputerName'=$computer
-				'Credential'=$credential
-				'SessionOption'=$options
-				'ErrorAction'='Stop'}
-			$session = New-CimSession @params
+			if ($param1.ToUpper() -eq "WMI")
+			{
+				Write-Host "###--------------WMIC-RUN--------------------###" -ForegroundColor Yellow
+				Write-Host ""
+				$options = New-CimSessionOption -Protocol DCOM -ErrorAction stop
+				$params = @{'ComputerName'=$computer
+					'Credential'=$credential
+					'SessionOption'=$options
+					'ErrorAction'='Stop'}
+				$session = New-CimSession @params
+			}
+			elseif ($param1.ToUpper() -eq "PSREMOTE")
+			{
+				Write-Host "###--------------PSREMOTE--------------------###" -ForegroundColor Yellow
+				Write-Host ""
+				$output = & New-PSSession -ComputerName $computer -Credential $credential 2>&1
+				if ($output -like '*domain*isn*t*available*')
+				{
+					Write-Host "Domain and host unreachable, is the DC down and hostname correct?!" -ForegroundColor Red
+					Write-Host ""
+					exit
+				}
+				elseif ($output -like '*IP*address*under*the*following*conditions*')
+				{
+					Write-Host "You need to use hostname instead of IP!" -ForegroundColor Red
+					Write-Host ""
+					exit
+				}
+				elseif ($output -like '*Cannot*find*the*computer*')
+				{
+					Write-Host "Hostname $computer not found!" -ForegroundColor Red
+					Write-Host ""
+					exit
+				}
+				elseif ($output -like '*The*user*name*or*password*is*incorrect*')
+				{
+					Write-Host "Incorrect username/password!" -ForegroundColor Red
+					Write-Host ""
+					exit
+				}
+				else
+				{
+					Write-Host $output
+				}
+				$this_session = (Get-PSSession).id.length-1
+				Enter-PSSession (Get-PSSession).id[$this_session]
+				exit
+			}
 		}
 		catch [Microsoft.Management.Infrastructure.CimException]
 		{
@@ -218,7 +283,9 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS")
 			{
 				$_.Exception.Message
 			}
+			exit
 		}
+		
 		try
 		{
 			Invoke-CimMethod -CimSession $session -ClassName Win32_Process -MethodName Create `
@@ -329,12 +396,11 @@ elseif ($param1.ToUpper() -eq "CHECKSID" -or $param1.ToUpper() -eq "FINDSID")
 }
 
 #LDAP-search  function
-function ldap_search 
-{	
-    	$pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
-    	$dn = ([ADSI]'').distinguishedName
-	$ldap_path = "LDAP://$pdc/$dn"
-	if ($param1.ToUpper() -eq "AUTH")
+function ldap_search {	
+    $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
+    $dn = ([ADSI]'').distinguishedName
+    $ldap_path = "LDAP://$pdc/$dn"
+    if ($param1.ToUpper() -eq "AUTH")
 	{
 		$ldap_login_res = New-Object System.DirectoryServices.DirectoryEntry($ldap_path, $param2, $param3)
 		if (-not $ldap_login_res.DistinguishedName)
