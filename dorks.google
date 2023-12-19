@@ -1,0 +1,17 @@
+##Google d0rks borrow from around teh webz
+
+##Random
+ext:log | ext:txt | ext:conf | ext:cnf | ext:ini | ext:env | ext:sh | ext:bak | ext:backup | ext:swp | ext:old | ext:~ | ext:git | ext:svn | ext:htpasswd | ext:htaccess site:target[.]com
+intitle:"index.of" (avi|mp4|mkv) some.video.title
+
+##PHP
+ext:php inurl:? site:example[.]com
+
+##Cloud storage related
+site:s3.amazonaws[.]com "target[.]com"
+site:blob.core[.]windows[.]net "target[.]com"
+site:googleapis[.]com "target[.]com"
+site:drive[.]google[.]com "target[.]com"
+
+site:s3.amazonaws[.]com | site:blob.core[.]windows[.]net | site:googleapis[.]com | site:drive[.]google[.]com "target[.]com"
+Narrow the results: "confidential” “privileged" “not for public release”
