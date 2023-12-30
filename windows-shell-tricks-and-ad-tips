@@ -81,6 +81,9 @@ ipconfig /all
 #Show routing table
 route print
 
+#Show task manager list and filter through it
+tasklist | findstr "whoami"
+
 #Get hostname for IP
 [system.net.dns]::gethostentry('192.168.12.34')
 
@@ -674,3 +677,4 @@ ls \\shared01\usernamesfolder
 
 #Distributed Component Object Model a.k.a. DCOM
 #DCOM communicates over RPC on TCP 135 and LA credentials are required to leverage the DCOM Service Control Manager (API)
+See enumhelper.ps1 for example usage for remote commands and reverse shell
