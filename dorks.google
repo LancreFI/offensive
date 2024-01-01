@@ -7,11 +7,33 @@ intitle:"index.of" (avi|mp4|mkv) some.video.title
 ##PHP
 ext:php inurl:? site:example[.]com
 
+##Sensitive parameters
+inurl:email= | inurl:phone= | inurl:password= | inurl:secret= inurl:& site:example[.]com
+
+##File upload endpoints
+site:example[.]com "choose file"
+
 ##Cloud storage related
 site:s3.amazonaws[.]com "target[.]com"
-site:blob.core[.]windows[.]net "target[.]com"
+site:blob.core.windows[.]net "target[.]com"
 site:googleapis[.]com "target[.]com"
-site:drive[.]google[.]com "target[.]com"
+site:drive.google[.]com "target[.]com"
+site:dev.azure[.]com "target[.]com"
+site:onedrive.live[.]com "target[.]com"
+site:digitaloceanspaces[.]com "target[.]com"
+site:sharepoint[.]com "target[.]com"
+site:s3-external-1.amazonaws[.]com "target[.]com"
+site:s3-dualstack.us-east-1.amazonaws[.]com "target[.]com"
+site:dropbox[.]com/s "target[.]com"
+site:box[.]com/s "target[.]com"
+site:docs.google[.]com inurl:"/d/" "target[.]com"
 
-site:s3.amazonaws[.]com | site:blob.core[.]windows[.]net | site:googleapis[.]com | site:drive[.]google[.]com "target[.]com"
+site:s3.amazonaws[.]com | site:blob.core[.]windows[.]net | site:googleapis[.]com | site:drive[.]google[.]com | site:dev.azure[.]com | site:onedrive.live[.]com | site:digitaloceanspaces[.]com
+| site:sharepoint[.]com | site:s3-external-1.amazonaws[.]com | site:s3-dualstack.us-east-1.amazonaws[.]com | site:dropbox[.]com/s | site:box[.]com/s | site:docs.google[.]com inurl:"/d/" "target[.]com"
 Narrow the results: "confidential” “privileged" “not for public release”
+
+##Leaksites
+site:pastebin[.]com "target[.]com"
+site:jsfiddle[.]net "target[.]com"
+site:codebeautify[.]com "target[.]com"
+site:codepen[.]io "target[.]com"
