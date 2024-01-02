@@ -1,4 +1,4 @@
-0. ASSESS THE SCOPE (IF A REAL-LIFE ASSESSMENT)
+0. Assess the scope (when doing pentesting in REAL life)
  0.0. NDA
  0.1. Purpose of testing
  0.2. Is there a time-window for the testing
@@ -13,10 +13,10 @@
   - Public scanners: shodan.io, search.censys.io, hunter.how
   - Other OSINT tools
  1.1. Network scan:
-  - nmap: -sC for using default scripts and -sV for service and version detection, 
+  - nmap
+	-sC for using default scripts and -sV for service and version detection, 
 	output to file:
 	  sudo nmap -sC -sV -oN target_host_nmap-results.txt target.host.tld 
-  - <-- add other tools here later -->
  1.2. Document
  
  
@@ -26,9 +26,11 @@
  
 3. IDENTIFY ATTACK SURFACE
  3.1. Check directory structures
-  - DirBuster/GoBuster etc. can be leveraged for dict/brute attacks
+  - DirBuster/GoBuster etc. can be leveraged for dict/brute attacks:
+		gobuster dir -u http://192.168.12.34 -w /home/user/tools/wordlists/dirb/common.txt -o target_host_gobuster_results.txt -x txt,sh,config
  3.2. Identify potential vulns
   - RCE, XSS, Injections etc.
+  - You can lookup CVEs from public sources or use for example searchsploit
  3.3. Internal code signing certs
  3.4. Open auth FTP
  3.5. SMTP access points giving out architechtual detials through error messages
@@ -46,7 +48,7 @@
 6. PWN
  6.1. Start pwning
  6.2. During the pwn also remember to gather all possible artifacts
- 6.3. On successful pwn try to inject persistence and gather more data
+ 6.3. On successful pwn try to inject persistence and gather more data, with for example LinPEAS or WinPEAS
  6.4. Document
  
  
@@ -54,7 +56,7 @@
  7.0. See if any earlier steps can be further exploited to gather more data
  
  
-8. CLEANUP AND REPORT
+8. Cleanup and report
  8.1. Remember to clean up the mess you might've left behind
  8.2. Report your well documented findings
   - Executive summary first for teh dummies
