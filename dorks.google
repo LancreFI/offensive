@@ -32,8 +32,19 @@ site:s3.amazonaws[.]com | site:blob.core[.]windows[.]net | site:googleapis[.]com
 | site:sharepoint[.]com | site:s3-external-1.amazonaws[.]com | site:s3-dualstack.us-east-1.amazonaws[.]com | site:dropbox[.]com/s | site:box[.]com/s | site:docs.google[.]com inurl:"/d/" "target[.]com"
 Narrow the results: "confidential” “privileged" “not for public release”
 
-##Leaksites
-site:pastebin[.]com "target[.]com"
+##Leaked data
+site:github[.]com "target[.]com"
+site:gitlab[.]com "target[.]com"
+site:bitbucket[.]org "target[.]com"
+site:sourceforce[.]net "target[.]com"
 site:jsfiddle[.]net "target[.]com"
 site:codebeautify[.]com "target[.]com"
 site:codepen[.]io "target[.]com"
+site:pastebin[.]com "target[.]com"
+site:textbin[.]net "target[.]com"
+site:jsbin[.]com "target[.]com"
+site:ideone[.]com "target[.]com"
+site:hastebin[.]com "target[.]com"
+site:glot[.]io "target[.]com"
+site:justpaste[.]it "target[.]com"
+site:ctxt[.]io "target[.]com"
