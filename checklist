@@ -1,0 +1,65 @@
+0. ASSESS THE SCOPE (IF A REAL-LIFE ASSESSMENT)
+ 0.0. NDA
+ 0.1. Purpose of testing
+ 0.2. Is there a time-window for the testing
+ 0.3. Is data tampering allowed
+ 0.4. Is impersonation allowed in any form
+ 0.5. Other possible rules of engagement
+
+
+1. RECON
+ 1.0. Passive recon
+  - Dorking: https://github.com/LancreFI/offensive/edit/main/dorks.google
+  - Public scanners: shodan.io, search.censys.io, hunter.how
+  - Other OSINT tools
+ 1.1. Network scan:
+  - nmap: -sC for using default scripts and -sV for service and version detection, 
+	output to file:
+	  sudo nmap -sC -sV -oN target_host_nmap-results.txt target.host.tld 
+  - <-- add other tools here later -->
+ 1.2. Document
+ 
+ 
+2. REITERATE
+ 2.0. If any findings, reiterate until all low hanging fruits have been picked
+ 
+ 
+3. IDENTIFY ATTACK SURFACE
+ 3.1. Check directory structures
+  - DirBuster/GoBuster etc. can be leveraged for dict/brute attacks
+ 3.2. Identify potential vulns
+  - RCE, XSS, Injections etc.
+ 3.3. Internal code signing certs
+ 3.4. Open auth FTP
+ 3.5. SMTP access points giving out architechtual detials through error messages
+ 3.6. Document
+ 
+ 
+4. REITERATE
+ 4.0. If any findings that might contribute to earlier stages, reiterate
+ 
+ 
+5. FORM A THREAT MODEL AND PLAN THE ATTACK VECTORS/SCENARIOS
+ 5.0. Create and attack plan
+ 
+
+6. PWN
+ 6.1. Start pwning
+ 6.2. During the pwn also remember to gather all possible artifacts
+ 6.3. On successful pwn try to inject persistence and gather more data
+ 6.4. Document
+ 
+ 
+7. REITERATE
+ 7.0. See if any earlier steps can be further exploited to gather more data
+ 
+ 
+8. CLEANUP AND REPORT
+ 8.1. Remember to clean up the mess you might've left behind
+ 8.2. Report your well documented findings
+  - Executive summary first for teh dummies
+   - Explain your startegy in business terms
+   - Identify results by risk rating
+    - This is the most crucial part, as decision makers usually only read the exec summary
+  - More detailed version for teh nerds
+   - This needs to be in-depth
