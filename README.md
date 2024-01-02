@@ -6,6 +6,9 @@ A WordPres plugin containing reverse shell. <br/>
 Prerequirements: you need access to the WP to upload and activate plugins.<br/>
 Just change the host/port to whatever your listener is running on and maybe adjust the shell accordingly too, then just zip it, upload the zip as a plugin and activate the plugin to get connected with the WP-instance.<br/>
 <br/>
+<b>checklist</b><br/>
+A very basic list of pentest steps.<br/>
+<br/>
 <b>dorks.google</b><br/>
 Some random Google dorks to leverage while enriching your case data<br/>
 <br/>
