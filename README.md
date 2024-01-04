@@ -13,7 +13,25 @@ A very basic list of pentest steps.<br/>
 Some random Google dorks to leverage while enriching your case data<br/>
 <br/>
 <b>enumhelper.ps1</b><br/>
-A PowerShell helper script for AD enumeration. Check the .\enumhelper.ps1 "help" for guidance.<br/>
+A helper script for AD enumeration and lateral movement. Built on-the-go so might contain a lot of logical fallacies and missing lots of error checks.<br/>
+Check the help section before running: .\enumhelper.ps1 "help" for somewhat of instructions.<br/>
+Can do: <br/>
+  - LDAP queries<br/>
+  - User/pass testing over LDAP-query<br/>
+  - List all properties of LDAP response object<br/>
+  - Get the value of a specific LDAP property<br/>
+  - Get all SPNs and related objects<br/>
+  - Check if any SPNs are tied to a (service)account<br/>
+  - Get DC info: name, hostname, OS, OS version, IPv4 and IPv6<br/>
+  - Get AD device info: name, hostname, OS, OS SP, OS version, IPv4 and IPv6<br/>
+  - Get AD user/group info by SID (converting a SID to a name for example)<br/>
+  - Create PsExec.exe or PsExec64.exe<br/>
+  - SID lookup from AD<br/>
+  - DCOM lateral movement leveraging MMC<br/>
+    - Also the possibility of building a reverse-shell command and initiating it on the target<br/>
+  - Remote connectiong over PowerShell<br/>
+  - Remote commands over WMI, WINRS, PsExec or PsExec64:<br/>
+    - Also the possibility of building a reverse-shell command and initiating it on the target<br/>
 <br/>
 <b>nix-shell-tricks</b><br/>
 Common tips and tricks etc. to use in Linux shell when being offensive or otherwise enumerating<br/>
