@@ -1,3 +1,7 @@
+Automatic enumeration can be conducted with WinPEASS (https://github.com/carlospolop/PEASS-ng)
+
+----
+
 ##Check if CMD or Powershell (by PetSerA)
 (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell
 
