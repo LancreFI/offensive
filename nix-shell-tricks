@@ -57,6 +57,7 @@ ssh -N -L 0.0.0.0:4455:10.10.10.1:5544 r00t@10.0.20.1
 ssh -N -D 0.0.0.0:3456 r00t@10.0.20.1
 #To use proxychains you'd need to add "socks5 10.0.20.1 3456" to /etc/proxychains4.conf, then just normally connect preceeding with proxychains command: proxychains smbclient -L //10.0.30.1/ -U admin --password=r00t
 #You can also run nmap over this tunnel with proxychains
+#To do nmap over proxychains you need to use -sT in nmap
 
 #SSH remote port forwarding, you need to have sshd running on your machine
 # -N makes sure not to open a shell and -R means remote forwarding
