@@ -1,7 +1,3 @@
-Automatic enumeration can be conducted with WinPEAS (https://github.com/carlospolop/PEASS-ng)
-
-----
-
 ##Check if CMD or Powershell (by PetSerA)
 (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell
 
@@ -436,8 +432,9 @@ cat \\dc1.domain.tld\sysvol\domain.tld\Policies\olds\backup_policy.xml
 #gpp-decrypt (https://blog.carnal0wnage.com/2012/10/group-policy-preferences-and-getting.html) as the private key has been posted in public
 
 --
+##Automatic basic enumeration on a Windows host can be conducted with WinPEAS (https://github.com/carlospolop/PEASS-ng)
 
-##Doing the enumeration automatically with for example SharpHound + BloodHound https://github.com/BloodHoundAD/BloodHound/tree/master
+##Doing the enumeration automatically with for example SharpHound (https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors) + BloodHound (https://github.com/BloodHoundAD/BloodHound/tree/master)
 
 #SharpHound to collect data (note that this causes a lot of noise, so would be a miracle not to get caught somewhere):
 Import-Module .\SharpHound.ps1
@@ -452,11 +449,23 @@ bloodhound
 #Bloodhound should detect your Neo service address and prompt you for the credentials and then you get to importing the zip
 
 #Keep refreshing database stats until it looks like all is populated (might take a while if a big AD environ)
-#Under analysis we can find interesting stuff, out of which some worth checking at least are
-# -Find All Domain Admins (under Domain Information)
-# -Find Shortest Paths to Domain Admins
-# -Find Shortest Paths to Domain Admins from Owned Principals, which you can use after marking "owned" nodes. Nevermind if you don't actually have any,
-#  this can still be used to plan some possible routes to further pwning if there are some likely targets you're going to own.
+
+#Manual queries:
+#Listing all computers:
+#MATCH (m:Computer) RETURN m
+#Listing the users:
+#MATCH (m:User) RETURN m
+#Remember to check the prebuilt queries under the Analysis section and mark owned hosts/users, some worth checking:
+#	-Find all Domain Admins
+#	-Find Computers where Domain Users are Local Admin
+#	-Find Workstations where Domain Users can RDP
+#	-Find Servers where Domain Users can RDP
+#	-Find Shortest Paths to Domain Admins
+#	-Find Shortest Path to Domain Admins from Owned Principals (for this you need to mark the owned hosts/users
+#	 You can also mark something owned to see what potential it would provide if you'd own it
+#Check for users with active session
+#MATCH p = (c:Computer)-[:HasSession]->(m:User) RETURN p
+
 
 --
 
