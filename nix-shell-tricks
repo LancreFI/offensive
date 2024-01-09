@@ -95,8 +95,12 @@ smbclient -p 445 -L //10.10.10.1/ -U admin --password=r00t
 #Put a file to a share:
 smbclient //dc.testad.local/share -c 'put definitely_not_malicious.exe' -U admin -P admin
 
-#Dump all available info from LDAP for example to process with Bloodhound
+#Dump all available info from LDAP:
 ldapsearch -x -H ldap://10.10.20.1 -b 'dc=testad,dc=local' -D 'cn=someuser,ou=users,dc=testad,dc=local' -W -z 9999999 > ldap_dump.ldif
+
+#Dump the LDAP info to BloodHound format with bloodhound.py (git clone https://github.com/fox-it/BloodHound.py
+#) as the default ingestor SharpHound only works on PS:
+./bloodhound.py -c All -u [username] -p [password] -dc [domain controller domain name] -d [domain name] -ns [nameserver ip] 
 
 #Import the AD data to your offensive host from the target host, should be located on the user's desktop named something along the lines of:
 #ad_dump_YYYYMMDDHHmmSS.zip
