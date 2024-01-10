@@ -95,6 +95,9 @@ tasklist | findstr "whoami"
 #System info
 systeminfo
 
+#Check if system is 32/64:
+$pointerSizeInBytes = (4, 8)[[Environment]::Is64BitOperatingSystem]; Write-Host ($pointerSizeInBytes*8)bit
+
 #Always lookout for these: Administrators, Backup Operators, Remote Desktop Users, Remote Management User
 #Remote Desktop Users can leverage RDP
 #Remote Management User can leverage WinRM
