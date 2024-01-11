@@ -346,7 +346,7 @@ Example: crackmapexec smb 192.168.12.34 -u userlist.txt -p 'p4ssw0rd' -d testdom
 First parameter is the proto, then a host in the domain, list of users, the password to spray, the domain and lastly not to stop on a match
 This will also check if the user has admin credentials automatically (will add Pwn3d! after such finding)
 
-For password spary over Ticket Granting Ticket (works on both Linux and Windows): https://github.com/ropnop/kerbrute
+For password spray over Ticket Granting Ticket (works on both Linux and Windows): https://github.com/ropnop/kerbrute
 Example: ./kerbrute_linux_amd64 passwordspray -d testad.local userlist.txt 4ssw0rd321
 For user enumeration
 Example: ./kerbrute_linux_amd64 userenum -d testad.local userlist.txt
