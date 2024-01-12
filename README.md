@@ -53,6 +53,13 @@ enumhelper.ps1
         - Remote commands over WMI, WINRS, PsExec or PsExec64:
           - Also the possibility of building a reverse-shell command and initiating it on the target
 
+KrbRelayUp.exe
+|
+'-->  Kerberos Relay attack binary. 
+      Lost my mind trying to get this to build so then just ended up getting a prebuilt one from
+      https://kb.offsec.nl/tools/techniques/krbrelayup/, thanks! The source is available at:
+      https://github.com/Dec0ne/KrbRelayUp
+      
 nix-shell-tricks
 |
 '-->  Common tips and tricks etc. to use in Linux shell when being offensive or otherwise enumerating
