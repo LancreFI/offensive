@@ -420,12 +420,19 @@ Get-ADObject -IncludeDeletedObjects -Filter "objectSid -eq 'S-1-5-21-809893099-1
 #To find out which SIDs have the highest rights (GenericAll) we can use some extra filtering. Filtering by group:
 Get-ObjectAcl -Identity "Group Leaders" | ? {$_.ActiveDirectoryRights -eq "GenericAll"} | select SecurityIdentifier,ActiveDirectoryRights
 
-#Add user to group
+#Add user to AD group with CMD
 net group "Group Leaders" username /add /domain
+#Add user to local group with CMD
+net localgroup "Local Group X" username /add
 #Check members of group with powerview
 Get-NetGroup "Group Leaders" | select member
 #Without
 Get-ADGroupMember "Group Leaders" | select username
+Get-ADGroupMember -Identity "GROUP NAME" | ft
+#Check local groups with CMD:
+net localgroup
+#Check members of a local group with CMD:
+net localgroup "group name"
 
 --
 
