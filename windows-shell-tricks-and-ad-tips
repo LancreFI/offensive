@@ -146,7 +146,9 @@ net localgroup Adiministrators username /add
 net group "Group Leaders" username /add /domain
 
 #Change user pass
-net username password
+net user username password
+#Change user pass to no pass
+net user username *
 
 #Run with other user credentials (you need the password too)
 runas /user:otheruser powershell
