@@ -218,6 +218,14 @@ rpcclient -U "" -N testad.local
 #Enumerate domain users with rpcclient:
 enumdomuser
 
+#Check for autologin users from registry with PowerShell
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+get-ItemProperty $RegistryPath "*"
+#or
+get-ItemProperty $RegistryPath "DefaultUserName"
+get-ItemProperty $RegistryPath "DefaultPassword"
+#etc.
+
 ----
 #Port forwarding
 
