@@ -53,6 +53,11 @@ enumhelper.ps1
         - Remote commands over WMI, WINRS, PsExec or PsExec64:
           - Also the possibility of building a reverse-shell command and initiating it on the target
 
+kerbrute_linux_amd64
+|
+'-->  An awesome tool for Kerberos bruting from https://github.com/ropnop/kerbrute, here's a pre-built
+      64bit Linux binary
+      
 KrbRelayUp.exe
 |
 '-->  Kerberos Relay attack binary. 
