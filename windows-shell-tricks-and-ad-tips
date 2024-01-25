@@ -241,6 +241,11 @@ get-ItemProperty $RegistryPath "DefaultPassword"
 #Search the registry for passowrds
 reg query HKLM /f password /t REG_SZ /s
 
+#List folder content in commandline (including hidden)
+dir /a:h
+#List folder content in PowerShell (including hidden)
+Get-ChildItem -force
+
 #Text to UTF8 (with BOM included) so that us *nix people can work with the stuff too!
 powershell "Get-Content 'utf16.txt' | Out-File 'ascii.txt' -Encoding ascii"
 
