@@ -175,6 +175,9 @@ Get-Process
 #Search for files recursively
 Get-ChildItem -Path C:\ -Include *.pdf,*.txt -File -Recurse -ErrorAction SilentlyContinue
 
+#Search for xml, ini and txt files containing "password"
+findstr /si password *.xml *.ini *.txt
+
 #Get user PS command history
 Get-History
 
@@ -234,6 +237,10 @@ get-ItemProperty $RegistryPath "*"
 get-ItemProperty $RegistryPath "DefaultUserName"
 get-ItemProperty $RegistryPath "DefaultPassword"
 #etc.
+
+#Search the registry for passowrds
+reg query HKLM /f password /t REG_SZ /s
+
 
 ----
 #Port forwarding
