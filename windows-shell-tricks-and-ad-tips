@@ -195,6 +195,15 @@ icacls "c:\path\to\binary.exe"
 #Second findstr also case insensitive and reverse matching, so finds paths not containing quotes
 wmic service get name,pathname |  findstr /i /v "C:\Windows\\" | findstr /i /v """
 
+#Show services
+sc query state=all
+
+#Show processes and services 
+tasklist /svc
+
+#Show firewall profiles and state
+netsh advfirewall show allprofiles
+
 #Start/stop services
 net start/stop service
 start-service/stop-service/restart-service service
