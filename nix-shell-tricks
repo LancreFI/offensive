@@ -84,6 +84,9 @@ sudo tcpdump -i lo  -A | grep "password"
 #Check app-armor status (requires root)
 aa-status
 
+#Convert Windows UTF16LE file (passwordfile) to UTF8 (password.file)
+iconv -f utf-16le -t utf-8 passwordfile -o password.file
+
 --
 
 #Check SMB shares
