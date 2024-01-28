@@ -178,6 +178,12 @@ Get-ChildItem -Path C:\ -Include *.pdf,*.txt -File -Recurse -ErrorAction Silentl
 #Search for xml, ini and txt files containing "password"
 findstr /si password *.xml *.ini *.txt
 
+#Search for folders recursively
+#Since PS3.0 (passing errors to null)
+ls c:\ *keyword* -Recurse -Directory 2>$null
+#Earlier (passing errors to null)
+Get-ChildItem C:\ -recurse 2>$null| Where-Object {$_.PSIsContainer -eq $true -and $_.Name -match "keyword"}
+
 #Get user PS command history
 Get-History
 
