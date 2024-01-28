@@ -851,3 +851,20 @@ to determine the server functionality level, so in our case it would be Windows 
 	6      2012 R2       2012 R2            2012 R2
 	7      2016          2016               2016
 
+#List all domain users
+ldapsearch -LLL -x -H ldap://dc1.testad.local -D "user@testad.local" -w your_simple_authentication_bind_password -b dc=testad,dc=local "(objectClass=user)" sAMAccountName userPrincipalName memberOf
+
+#List all domain groups
+ldapsearch -LLL -x -H ldap://dc1.testad.local -D "user@testad.local" -w your_simple_authentication_bind_password -b dc=testad,dc=local "(objectClass=group)" sAMAccountName member memberOf
+
+#List all domain joined systems
+ldapsearch -LLL -x -H ldap://dc1.testad.local -D "user@testad.local" -w your_simple_authentication_bind_password -b dc=testad,dc=local "(objectClass=computer)" name dNSHostname operatingSystem operatingSystemVersion lastLogonTimestamp servicePrincipalName
+
+#Recursively lookup all group members
+ldapsearch -LLL -x -H ldap://dc1.testad.local -D "user@testad.local" -w your_simple_authentication_bind_password -b dc=testad,dc=local "(&(objectClass=user)(memberof:1.2.840.113556.1.4.1941:=CN=DomänenAdmins,CN=Users,DC=PWNY,DC=LAB))" | grep sAMAccountName | cut -d" " -f2
+
+#Show all groups a user is memberOf
+ldapsearch -LLL -x -H ldap://dc1.testad.local -D "user@testad.local" -w your_simple_authentication_bind_password -b dc=testad,dc=local "(sAMAccountName=darth.vader)" sAMAccountName userPrincipalName memberOf | grep memberOf | cut -d "=" -f2 | cut -d"," -f1
+
+#Dump users, groups, machines etc from LDAP
+ldapsearch -x -H ldap://10.0.0.1 -b 'dc=testad,dc=local' -D 'cn=guest,ou=users,dc=testad,dc=local' -W -z 9999999 > ldap_dump.ldif
