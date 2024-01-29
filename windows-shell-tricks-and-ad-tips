@@ -139,6 +139,9 @@ net accounts
 #Check what privileges the user has
 whoami /priv
 
+#Check file privileges
+Get-Acl some_executable.exe
+
 #Get path for a bimary
 where powershell
 
