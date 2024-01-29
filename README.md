@@ -53,6 +53,10 @@ enumhelper.ps1
         - Remote commands over WMI, WINRS, PsExec or PsExec64:
           - Also the possibility of building a reverse-shell command and initiating it on the target
 
+Get-Shortcut.ps1
+|
+'-->  Get shortcut (.lnk) info via PowerShell. Just import-module .\Get-Shortcut.ps1 and you can go: Get-Shortcut c:\path\to\link.lnk
+      
 kerbrute_linux_amd64
 |
 '-->  An awesome tool for Kerberos bruting from https://github.com/ropnop/kerbrute, here's a pre-built
