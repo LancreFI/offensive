@@ -355,6 +355,9 @@ Get-ADDomainController -Filter * | Format-Table Name, OperatingSystem, Operating
 #Get the Name, OS, OS SP, OS version and IPv4/6 for all devices in domain, or again remove filter and get even more and adjust the filter to your needs
 Get-ADComputer -Filter * -Property * | Format-Table Name, OperatingSystem, OperatingSystemServicePack, OperatingSystemVersion, IPv4Address, IPv6Address -Wrap -Auto
 
+#Get AD recycle bin content, if you have credentials for a user who's a member of "AD Recycle Bin" group
+Get-ADObject -filter 'isDeleted -eq $true' -includeDeletedObjects -Properties *
+
 ##Dynamically obtain the LDAP path using a powershell script, script content:
 $pdc = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner.Name
 $dn = ([adsi]'').distinguishedName
