@@ -87,6 +87,14 @@ aa-status
 #Convert Windows UTF16LE file (passwordfile) to UTF8 (password.file)
 iconv -f utf-16le -t utf-8 passwordfile -o password.file
 
+#Decrypt AES-128-CBC with OpenSSL, when you have the encrypted content, the encryption key and iv (key + iv = password), in this case the encrypted content 
+#was in HTB (retired machine, so may as well release it), most likely adoptable with small changes to other cipher suites
+# echo out the base64 encoded encrypted content (-n for no newline)
+#                   |                     .-- decrypt the base64 content, base64 is the only way to represent the garble sensibly
+#                   |                     |   that stuff be encoded .decode it     cipher       key needs to be in hex        iv also needs to be in hex
+#                   |                     |                    |    |  .-no padding  |                   |                               |                          
+echo -n "BQO5l5Kj9MdErXx6Q6AGOw==" | base64 --decode | openssl enc -d -nopad -AES-128-CBC -K $(echo -n 'c4scadek3y654321' | xxd -p) -iv $(echo -n '1tdyjCbY1Ix49842' | xxd -p)
+
 --
 
 #Check SMB shares
