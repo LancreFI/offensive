@@ -116,7 +116,9 @@ $pointerSizeInBytes = (4, 8)[[Environment]::Is64BitOperatingSystem]; Write-Host 
 #Always lookout for these: Administrators, Backup Operators, Remote Desktop Users, Remote Management User
 #Remote Desktop Users can leverage RDP
 #Remote Management User can leverage WinRM
-#Backup Operators can operate on files they don't own
+#Backup Operators can operate on files they don't own, or dump HKLM SAM and SYSTEM
+reg save hklm\system c:\temp\SYSTEM
+reg save hklm\sam c:\temp\SYSTEM
 #"Log on as a batch job" user rights enables leveraging scheduled tasks
 #Remember you can elevate with: runas /user:masterAdmin cmd
 
