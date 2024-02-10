@@ -106,6 +106,9 @@ smbclient -p 445 -L //10.10.10.1/ -U admin --password=r00t
 #Put a file to a share:
 smbclient //dc.testad.local/share -c 'put definitely_not_malicious.exe' -U admin -P admin
 
+#Mount a share (in this case requires username)
+sudo mount -t cifs //10.10.10.1/guest$ /home/user/mountpoint -o username=Guest
+
 #Dump all available info from LDAP:
 ldapsearch -x -H ldap://10.10.20.1 -b 'dc=testad,dc=local' -D 'cn=someuser,ou=users,dc=testad,dc=local' -W -z 9999999 > ldap_dump.ldif
 
