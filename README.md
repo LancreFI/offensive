@@ -6,9 +6,9 @@ Tips and tricks etc. for offensive security and testing
 anonsamba.conf
 |
 '-->  A config file to enable anonymous SMB share. Just replace interfaces with whatever IP net and interface you use and set
-      log dir and path for the share, easiest at /home/sharedir (remember to disable after use, in this share the users have
-      all permissions). Replace /etc/smb.conf with this one (remember to copy the default smb.conf and revert after use.
-      To enable the new conf or reverted conf: sudo systemctl restart smbd
+      log dir and path for the share, easiest at /home/sharedir (also "chmod -R ugo+w /home/sharedir" remember to disable after 
+      use, in this share the users have all permissions). Replace /etc/smb.conf with this one (remember to copy the default 
+      smb.conf and revert after use. To enable the new conf or reverted conf: "sudo systemctl restart smbd"
       
 BackdoorPlug.php
 |
